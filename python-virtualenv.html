@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="EverLose, EverLose">
+
+
+        <title>virtualenv学习 // EverLose // EverLose</title>
+
+    <link href="./theme/images/icons/favicon.ico" rel="icon">
+
+    <link rel="stylesheet" href="http://yui.yahooapis.com/pure/0.5.0/pure-min.css">
+    <link rel="stylesheet" href="./theme/css/font-awesome.min.css">
+    <link rel="stylesheet" href="./theme/css/pure.css">
+    <!-- Custom style -->
+    <link rel="stylesheet" type="text/css" href="./theme/css/style.css">
+    <link rel="stylesheet" href="./theme/css/pygments.css">
+
+    <script src="./theme/js/jquery-2.1.1.min.js"></script>
+    <script src="./theme/js/jquery.fitvids.js"></script>
+    <script type="text/javascript">
+        $(document).ready(function(){
+            $(".content").fitVids();
+        });
+    </script>
+</head>
+
+<body>
+    <div class="pure-g-r" id="layout">
+        <div class="sidebar pure-u">
+            <div class="cover-img" style="background-image: url('http://everlose.qiniudn.com/sanqiao.jpg')">
+                <div class="cover-body">
+                    <header class="header">
+                        <hgroup>
+                            <h1 class="brand-main"><a href=".">EverLose</a></h1>
+                            <p class="tagline">EverLose</p>
+                                <p class="social">
+                                    <a href="http://weibo.com/mutoulbj">
+                                        <i class="fa fa-weibo fa-3x"></i>
+                                    </a>
+                                    <a href="http://github.com/mutoulbj">
+                                        <i class="fa fa-github fa-3x"></i>
+                                    </a>
+                                    <a href="http://twitter.com/mutoulbj">
+                                        <i class="fa fa-twitter fa-3x"></i>
+                                    </a>
+                                </p>
+                        </hgroup>
+                    </header>
+                </div>
+            </div>
+        </div>
+    <div class="pure-u">
+        <div class="content">
+            <section class="post">
+                <header class="post-header">
+                    <h1>virtualenv学习</h1>
+                        <p class="post-meta">
+                            <i class="fa fa-book"></i>                                 <a class="post-category" href="./tag/virtualenv.html">virtualenv</a>
+                        </p>
+                </header>
+            </section>
+            <h3>virtualenv ENV 创建虚拟环境</h3>
+<p>会创建<code>/ENV/lib/pythonX.X/site-packages</code>，之后所安装的所有包都会再这个目录中。同时也会创建<code>/ENV/bin/python</code>，即这个环境中都会使用这个python解释器，在文件加上<code>#! /path/to/ENV/bin/python</code>，则该脚本就会使用该解释器执行。  </p>
+<p>同时，也会安装Setuptools或者distribute在这个环境中，如下使用:
+<code>$ python virtualenv.py -- distribute env</code><br />
+在虚拟环境中也安装了pip，用来安装包。</p>
+<p>新创建的虚拟环境中有一个<code>/bin/activate</code> 脚本，使用<code>$source bin/activate</code>运行脚本。这会修改终端提示符<code>shell prompt</code>来标识哪个虚拟环境正在使用，会改变$PATH,进入虚拟环境的 bin/ 目录，这是为了方便，也可以使用虚拟环境的目录来执行脚本，如：<code>path/to/env/bin/python script.py</code>来执行也是一样的，这样就不需要执行activate脚本，但是这样会很不方便。</p>
+<h3>–system-site-packages 选项</h3>
+<p>如果使用 <code>virtualenv --system-site-packages ENV</code>创建虚拟环境，则虚拟环境会使用系统的包，如<code>/usr/lib/python2.7/site-packages</code>，当想虚拟环境使用系统的包的时候，可以这么做，但是如果想创建一个完全隔离的虚拟环境，就不要这么做。我一般不会使用这个选项，那样的可以保持系统环境的干净，既然要使用系统环境中的很多包，那么就不需要创建虚拟环境，直接在系统环境中开发就好了。  </p>
+<h3>环境变量和配置文件</h3>
+<p>使用名称格式如：<code>VIRTUALENV_</code> 可以在系统中设置使用虚拟环境中的环境变量：  </p>
+<div class="highlight"><pre><span></span>$ <span class="nb">export</span> <span class="nv">VIRTUALENV_DISTRIBUTE</span><span class="o">=</span><span class="nb">true</span>  
+</pre></div>
+
+
+<p>接着使用命令：
+<code>$ python virtualenv.py ENV</code>
+的效果与 <code>$ python virtualenv.py --distribute ENV</code>相同。
+同样，  </p>
+<div class="highlight"><pre><span></span>$ <span class="nb">export</span> <span class="nv">VIRTUALENV_EXTRA_SEARCH_DIR</span><span class="o">=</span><span class="s2">&quot;/path/to/dists /path/to/other/dists&quot;</span>
+$ virtualenv ENV
+</pre></div>
+
+
+<p>与  </p>
+<div class="highlight"><pre><span></span>$ python virtualenv.py --extra-search-dir<span class="o">=</span>/path/to/dists --extra-search-dir<span class="o">=</span>/path/to/other/dists ENV  
+</pre></div>
+
+
+<p>效果相同.</p>
+<p>＊nix系统中配置文件为:<code>$HOME/.virtualenv/virtualenv.ini</code>,使用<code>virtualenv --help</code>可以查看所有的选项。  </p>
+<p>配置文件中的内容为：  </p>
+<div class="highlight"><pre><span></span><span class="k">[virtualenv]</span>
+<span class="na">distribute</span> <span class="o">=</span> <span class="s">true</span>
+<span class="err">添加多行的配置可以如下：</span>
+<span class="k">[virtualenv]</span>
+<span class="na">extra-search-die</span> <span class="o">=</span><span class="s"></span>
+<span class="s">  /path/to/dists</span>
+<span class="s">  /path/to/other/dists</span>
+</pre></div>
+
+
+<p>virtualenv可以按照自己的需求修改启动脚本，具体参见文档<a href="http://www.virtualenv.org/en/latest/">Creating Your Own Bootstrap Scripts</a>,上面有具体例子。  </p>
+<h3>使虚拟环境可移植[windows下该功能不可用]</h3>
+<p>一般虚拟环境会绑定到特定的路径，这就意味着不能移动该虚拟环境或者复制到另外的电脑中，可以使用以下命令来使虚拟环境可移植:   </p>
+<div class="highlight"><pre><span></span>$ virtualenv --relocatable ENV   
+</pre></div>
+
+
+<p>这会使一些用setuptools安装的文件和distribute使用相对路径，也会使用activate_this.py脚本代替使用所选择的虚拟环境中的python解释器。
+注意：必须在安装了所有包到虚拟环境中之后运行该命令，如果安装了新包，则需要再运行一次。但是，虽然这样可以使虚拟环境可以移植，但是不意味着可以跨平台。也就是说，如果是linux中的虚拟环境只能移植到linux平台下。</p>
+<h3>–extra-search-dir 选项</h3>
+<p>一般创建的时候，当虚拟环境安装好，会使用<code>virtualenv_support</code>目录下所绑定的包。但是单独执行<code>virtualenv.py</code>创建的时候<code>virtualenv_support</code>是不可用的。  </p>
+<p>可以使用 <code>–extra-search-dir</code>选项来制定包的位置，避免从网上下载。  </p>
+<div class="highlight"><pre><span></span>$ virtualenv --extra-search-dir<span class="o">=</span>/path/to/distributions ENV  
+</pre></div>
+
+
+<p>路径 <code>/path/to/distributions</code> 指的是包含<code>setuptools,distribute</code>和<code>pip distributions.
+setuptools</code>的<code>distributions是.egg</code>文件，pip的distributions是.tar.gz源文件，而distribute两者都可能，如果有.egg文件则优先使用.egg文件.
+如果制定的目录中也没有相应的包，则还是会从网上下载，如果想永远不下载，则可以使用
+<code>--never-download</code>选项，如：  </p>
+<div class="highlight"><pre><span></span>$ virtualenv --extra-search-dir<span class="o">=</span>/path/to/distrubutions --never-dowoad ENV  
+</pre></div>
+            <a href="#" class="go-top">Go Top</a>
+    <div class="comments">
+        <div id="disqus_thread"></div>
+        <script type="text/javascript">
+            /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+            var disqus_shortname = "everlose"; // required: replace example with your forum shortname
+
+            /* * * DON'T EDIT BELOW THIS LINE * * */
+            (function() {
+                var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+                dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+                (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+            })();
+        </script>
+        <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+        <a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+    </div>
+<footer class="footer">
+    <p>&copy; 木头lbj &ndash;
+        Built with <a href="https://github.com/PurePelicanTheme/pure-single">Pure Theme</a>
+        for <a href="http://blog.getpelican.com/">Pelican</a>
+    </p>
+</footer>        </div>
+    </div>
+    </div>
+    <script>
+        var $top = $('.go-top');
+
+        // Show or hide the sticky footer button
+        $(window).scroll(function() {
+            if ($(this).scrollTop() > 200) {
+                $top.fadeIn(200);
+            } else {
+                $top.fadeOut(200);
+            }
+        });
+
+        // Animate the scroll to top
+        $top.click(function(event) {
+            event.preventDefault();
+            $('html, body').animate({scrollTop: 0}, 300);
+        })
+
+        // Makes sure that the href="#" attached to the <a> elements
+        // don't scroll you back up the page.
+        $('body').on('click', 'a[href="#"]', function(event) {
+            event.preventDefault();
+        });
+    </script>
+
+</body>
+</html>

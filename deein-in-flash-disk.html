@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="EverLose, EverLose">
+
+
+        <title>U盘中安装Linux Deepin // EverLose // EverLose</title>
+
+    <link href="./theme/images/icons/favicon.ico" rel="icon">
+
+    <link rel="stylesheet" href="http://yui.yahooapis.com/pure/0.5.0/pure-min.css">
+    <link rel="stylesheet" href="./theme/css/font-awesome.min.css">
+    <link rel="stylesheet" href="./theme/css/pure.css">
+    <!-- Custom style -->
+    <link rel="stylesheet" type="text/css" href="./theme/css/style.css">
+    <link rel="stylesheet" href="./theme/css/pygments.css">
+
+    <script src="./theme/js/jquery-2.1.1.min.js"></script>
+    <script src="./theme/js/jquery.fitvids.js"></script>
+    <script type="text/javascript">
+        $(document).ready(function(){
+            $(".content").fitVids();
+        });
+    </script>
+</head>
+
+<body>
+    <div class="pure-g-r" id="layout">
+        <div class="sidebar pure-u">
+            <div class="cover-img" style="background-image: url('http://everlose.qiniudn.com/sanqiao.jpg')">
+                <div class="cover-body">
+                    <header class="header">
+                        <hgroup>
+                            <h1 class="brand-main"><a href=".">EverLose</a></h1>
+                            <p class="tagline">EverLose</p>
+                                <p class="social">
+                                    <a href="http://weibo.com/mutoulbj">
+                                        <i class="fa fa-weibo fa-3x"></i>
+                                    </a>
+                                    <a href="http://github.com/mutoulbj">
+                                        <i class="fa fa-github fa-3x"></i>
+                                    </a>
+                                    <a href="http://twitter.com/mutoulbj">
+                                        <i class="fa fa-twitter fa-3x"></i>
+                                    </a>
+                                </p>
+                        </hgroup>
+                    </header>
+                </div>
+            </div>
+        </div>
+    <div class="pure-u">
+        <div class="content">
+            <section class="post">
+                <header class="post-header">
+                    <h1>U盘中安装Linux Deepin</h1>
+                        <p class="post-meta">
+                            <i class="fa fa-book"></i>                                 <a class="post-category" href="./tag/deepin.html">deepin</a>
+                        </p>
+                </header>
+            </section>
+            <p>一直想在U盘中安装一个系统，这样我就可以带着到处走，只要有电脑我就可以使用我自己的系统。如今的U盘容量越来越大，加上3.0的普及，速度也不再是问题。趁着过年回家的空闲，在mac下完成了在3.0接口16gU盘安装国内的一款linux发行版，Linux Deepin。  </p>
+<p>过程非常的顺利,需要注意的就是一点，将bootloader安装在U盘中，这样使用U盘启动的时候会有几个选项，而在使用电脑自身硬盘启动的时候不会出现几个选项。</p>
+<blockquote>
+<p>准备:  </p>
+<ol>
+<li>安装盘一个，可以是U盘启动盘或者光盘等。我使用的是U盘启动盘，这样速度比较快。  </li>
+<li>空白U盘一个，最好是3.0接口，根据需求选择容量，当然越大越好呵呵。我选择的是8g的3.0接口U盘。  </li>
+<li>pc一台。  </li>
+</ol>
+<p>安装:  </p>
+<ol>
+<li>将2个U盘都接上电脑，启动电脑，进入bios选择从U盘启动。</li>
+<li>进入安装过程，选择空白的U盘，格式化成ext4格式，挂在/。既然是在U盘中安装，我觉得就没必要分区了，也没必要划分swap分区，因为如今的内存都比较大，无swap的影响不大，也可以延长U盘的寿命。</li>
+<li>选择将bootloader安装在U盘中，这样的好处前面已经说过。</li>
+<li>其他的安装过程与硬盘安装完全相同。  </li>
+</ol>
+<p>启动：安装完后，在启动时，首先进入bios，选择从U盘启动，就能进入U盘中的系统啦。非常的方便。  </p>
+</blockquote>
+<p>此外，有必要推荐下<em>Linux Deepin</em>这个发行版，基于ubuntu，很好的继承了易用性，安装也非常的方便。而国内制作的发行版，默认安装了fcitx输入法，并且在软件中心中也有各种winQQ和webQQ等国人离不开的软件。可以直接安装，免去了不必要的折腾。非常的方便，另外，界面UI非常的漂亮，有mac的风范。  </p>
+<p>推荐大家使用。 </p>
+            <a href="#" class="go-top">Go Top</a>
+    <div class="comments">
+        <div id="disqus_thread"></div>
+        <script type="text/javascript">
+            /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+            var disqus_shortname = "everlose"; // required: replace example with your forum shortname
+
+            /* * * DON'T EDIT BELOW THIS LINE * * */
+            (function() {
+                var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+                dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+                (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+            })();
+        </script>
+        <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+        <a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+    </div>
+<footer class="footer">
+    <p>&copy; 木头lbj &ndash;
+        Built with <a href="https://github.com/PurePelicanTheme/pure-single">Pure Theme</a>
+        for <a href="http://blog.getpelican.com/">Pelican</a>
+    </p>
+</footer>        </div>
+    </div>
+    </div>
+    <script>
+        var $top = $('.go-top');
+
+        // Show or hide the sticky footer button
+        $(window).scroll(function() {
+            if ($(this).scrollTop() > 200) {
+                $top.fadeIn(200);
+            } else {
+                $top.fadeOut(200);
+            }
+        });
+
+        // Animate the scroll to top
+        $top.click(function(event) {
+            event.preventDefault();
+            $('html, body').animate({scrollTop: 0}, 300);
+        })
+
+        // Makes sure that the href="#" attached to the <a> elements
+        // don't scroll you back up the page.
+        $('body').on('click', 'a[href="#"]', function(event) {
+            event.preventDefault();
+        });
+    </script>
+
+</body>
+</html>

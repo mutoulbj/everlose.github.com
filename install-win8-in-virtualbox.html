@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="EverLose, EverLose">
+
+
+        <title>VirtualBox 安装win8 RTM // EverLose // EverLose</title>
+
+    <link href="./theme/images/icons/favicon.ico" rel="icon">
+
+    <link rel="stylesheet" href="http://yui.yahooapis.com/pure/0.5.0/pure-min.css">
+    <link rel="stylesheet" href="./theme/css/font-awesome.min.css">
+    <link rel="stylesheet" href="./theme/css/pure.css">
+    <!-- Custom style -->
+    <link rel="stylesheet" type="text/css" href="./theme/css/style.css">
+    <link rel="stylesheet" href="./theme/css/pygments.css">
+
+    <script src="./theme/js/jquery-2.1.1.min.js"></script>
+    <script src="./theme/js/jquery.fitvids.js"></script>
+    <script type="text/javascript">
+        $(document).ready(function(){
+            $(".content").fitVids();
+        });
+    </script>
+</head>
+
+<body>
+    <div class="pure-g-r" id="layout">
+        <div class="sidebar pure-u">
+            <div class="cover-img" style="background-image: url('http://everlose.qiniudn.com/sanqiao.jpg')">
+                <div class="cover-body">
+                    <header class="header">
+                        <hgroup>
+                            <h1 class="brand-main"><a href=".">EverLose</a></h1>
+                            <p class="tagline">EverLose</p>
+                                <p class="social">
+                                    <a href="http://weibo.com/mutoulbj">
+                                        <i class="fa fa-weibo fa-3x"></i>
+                                    </a>
+                                    <a href="http://github.com/mutoulbj">
+                                        <i class="fa fa-github fa-3x"></i>
+                                    </a>
+                                    <a href="http://twitter.com/mutoulbj">
+                                        <i class="fa fa-twitter fa-3x"></i>
+                                    </a>
+                                </p>
+                        </hgroup>
+                    </header>
+                </div>
+            </div>
+        </div>
+    <div class="pure-u">
+        <div class="content">
+            <section class="post">
+                <header class="post-header">
+                    <h1>VirtualBox 安装win8 RTM</h1>
+                        <p class="post-meta">
+                            <i class="fa fa-book"></i>                                 <a class="post-category" href="./tag/virtualbox.html">virtualbox</a>
+                                <a class="post-category" href="./tag/win8.html">win8</a>
+                        </p>
+                </header>
+            </section>
+            <p>最近win8.1 RTM流传到了网上，不折腾一下对不起自己啊。  </p>
+<p>我选择的是win8.1 professional 64bit,即64位专业版。安装完后出现如下错误:  </p>
+<div class="highlight"><pre><span></span>Your PC needs to restart.  
+Please hold down the power button.  
+Error code: 0x000000C4  
+Parameters:  
+0×0000000000000091  
+0x000000000000000F  
+0xFFFFF801E5962A80  
+0×0000000000000000  
+</pre></div>
+
+
+<p>一翻搜索之后，发现是CPU的问题,安装windows8.1，CPU需要支持<code>CMPXCHG16b</code>,<code>PrefechQ</code>和<code>LAHF/SAHF</code>。解决方法如下:  </p>
+<p>进入终端，我的主机是MacPro，windows主机需要进入cmd。首先列出所有你安装的虚拟机:  </p>
+<div class="highlight"><pre><span></span>VBoxManage list vms  
+</pre></div>
+
+
+<p>然后在列出的虚拟机中找到你的win8的名称，我的是<code>win8</code>。接下来，先关闭你的虚拟机，输入如下命令:  </p>
+<div class="highlight"><pre><span></span>VBoxManage setextradata <span class="o">[</span>vmname<span class="o">]</span> VBoxInternal/CPUM/CMPXCHG16B <span class="m">1</span>  
+</pre></div>
+
+
+<p>将[vmname] 换成你的win8虚拟机名称，我为<code>win8</code>。 </p>
+<p>Bingo,一切OK啦。  </p>
+<p>在安装过程中我的mac风扇都要疯了，win8确实漂亮很多，但是有我在虚拟机中感觉有点慢。对windows依然是无爱。  </p>
+            <a href="#" class="go-top">Go Top</a>
+    <div class="comments">
+        <div id="disqus_thread"></div>
+        <script type="text/javascript">
+            /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+            var disqus_shortname = "everlose"; // required: replace example with your forum shortname
+
+            /* * * DON'T EDIT BELOW THIS LINE * * */
+            (function() {
+                var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+                dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+                (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+            })();
+        </script>
+        <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+        <a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+    </div>
+<footer class="footer">
+    <p>&copy; 木头lbj &ndash;
+        Built with <a href="https://github.com/PurePelicanTheme/pure-single">Pure Theme</a>
+        for <a href="http://blog.getpelican.com/">Pelican</a>
+    </p>
+</footer>        </div>
+    </div>
+    </div>
+    <script>
+        var $top = $('.go-top');
+
+        // Show or hide the sticky footer button
+        $(window).scroll(function() {
+            if ($(this).scrollTop() > 200) {
+                $top.fadeIn(200);
+            } else {
+                $top.fadeOut(200);
+            }
+        });
+
+        // Animate the scroll to top
+        $top.click(function(event) {
+            event.preventDefault();
+            $('html, body').animate({scrollTop: 0}, 300);
+        })
+
+        // Makes sure that the href="#" attached to the <a> elements
+        // don't scroll you back up the page.
+        $('body').on('click', 'a[href="#"]', function(event) {
+            event.preventDefault();
+        });
+    </script>
+
+</body>
+</html>

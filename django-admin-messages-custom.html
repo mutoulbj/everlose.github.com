@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="EverLose, EverLose">
+
+
+        <title>Django Admin消息定制 // EverLose // EverLose</title>
+
+    <link href="./theme/images/icons/favicon.ico" rel="icon">
+
+    <link rel="stylesheet" href="http://yui.yahooapis.com/pure/0.5.0/pure-min.css">
+    <link rel="stylesheet" href="./theme/css/font-awesome.min.css">
+    <link rel="stylesheet" href="./theme/css/pure.css">
+    <!-- Custom style -->
+    <link rel="stylesheet" type="text/css" href="./theme/css/style.css">
+    <link rel="stylesheet" href="./theme/css/pygments.css">
+
+    <script src="./theme/js/jquery-2.1.1.min.js"></script>
+    <script src="./theme/js/jquery.fitvids.js"></script>
+    <script type="text/javascript">
+        $(document).ready(function(){
+            $(".content").fitVids();
+        });
+    </script>
+</head>
+
+<body>
+    <div class="pure-g-r" id="layout">
+        <div class="sidebar pure-u">
+            <div class="cover-img" style="background-image: url('http://everlose.qiniudn.com/sanqiao.jpg')">
+                <div class="cover-body">
+                    <header class="header">
+                        <hgroup>
+                            <h1 class="brand-main"><a href=".">EverLose</a></h1>
+                            <p class="tagline">EverLose</p>
+                                <p class="social">
+                                    <a href="http://weibo.com/mutoulbj">
+                                        <i class="fa fa-weibo fa-3x"></i>
+                                    </a>
+                                    <a href="http://github.com/mutoulbj">
+                                        <i class="fa fa-github fa-3x"></i>
+                                    </a>
+                                    <a href="http://twitter.com/mutoulbj">
+                                        <i class="fa fa-twitter fa-3x"></i>
+                                    </a>
+                                </p>
+                        </hgroup>
+                    </header>
+                </div>
+            </div>
+        </div>
+    <div class="pure-u">
+        <div class="content">
+            <section class="post">
+                <header class="post-header">
+                    <h1>Django Admin消息定制</h1>
+                        <p class="post-meta">
+                            <i class="fa fa-book"></i>                                 <a class="post-category" href="./tag/django.html">django</a>
+                        </p>
+                </header>
+            </section>
+            <p>Django admin 真是一个强大的东西，轻轻松松就能搭好一个网站的后台，大部分的功能都能满足。它也自带了操作后的消息提醒。具体可以查看文档<a href="https://docs.djangoproject.com/en/1.5/ref/contrib/admin/actions/">Admin actions</a>。文档中有非常简单的给用户发送消息的方法，即：  </p>
+<div class="highlight"><pre><span></span><span class="bp">self</span><span class="o">.</span><span class="n">message_user</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">message</span><span class="p">)</span>  
+</pre></div>
+
+
+<p>但是这样的消息都是“操作成功”的消息，消息前面带的是一个绿色勾的图标。而很多时候需要对错误的操作和未成功的操作给出提示，这也的提示消息显然不行。  </p>
+<p>这也很简单，Django中带有messages模块，可以做出各种消息定制。Django真是一个大而全的框架。  </p>
+<p>直接上代码：  </p>
+<div class="highlight"><pre><span></span> <span class="kn">from</span> <span class="nn">django.contrib</span> <span class="kn">import</span> <span class="n">admin</span>
+ <span class="kn">from</span> <span class="nn">models</span> <span class="kn">import</span> <span class="n">Category</span><span class="p">,</span> <span class="n">Group</span><span class="p">,</span> <span class="n">Topic</span><span class="p">,</span> <span class="n">Report</span><span class="p">,</span> <span class="n">Applicant</span> 
+ <span class="kn">from</span> <span class="nn">django.contrib</span> <span class="kn">import</span> <span class="n">messages</span>
+ <span class="k">class</span> <span class="nc">ApplicantAdmin</span><span class="p">(</span><span class="n">admin</span><span class="o">.</span><span class="n">ModelAdmin</span><span class="p">):</span>
+    <span class="n">list_display</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;applicant&#39;</span><span class="p">,</span> <span class="s1">&#39;group&#39;</span><span class="p">,</span> <span class="s1">&#39;reason&#39;</span><span class="p">,</span> <span class="s1">&#39;join_type&#39;</span><span class="p">,</span> <span class="s1">&#39;status&#39;</span><span class="p">)</span>
+    <span class="n">list_filter</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;group&#39;</span><span class="p">,</span> <span class="s1">&#39;join_type&#39;</span><span class="p">,</span> <span class="s1">&#39;status&#39;</span><span class="p">)</span>
+    <span class="n">actions</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;pass_apply&#39;</span><span class="p">,</span> <span class="s1">&#39;reject_apply&#39;</span><span class="p">]</span>  
+
+    <span class="k">def</span> <span class="nf">pass_apply</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">queryset</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; 通过申请 @fanlintao &quot;&quot;&quot;</span>
+        <span class="n">can_treat</span> <span class="o">=</span> <span class="bp">True</span>
+        <span class="k">for</span> <span class="n">q</span> <span class="ow">in</span> <span class="n">queryset</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">q</span><span class="o">.</span><span class="n">status</span> <span class="o">!=</span> <span class="s1">&#39;processing&#39;</span><span class="p">:</span>
+                <span class="n">can_treat</span> <span class="o">=</span> <span class="bp">False</span>
+                <span class="k">continue</span>
+        <span class="k">if</span> <span class="n">can_treat</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">q</span> <span class="ow">in</span> <span class="n">queryset</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">q</span><span class="o">.</span><span class="n">join_type</span> <span class="o">==</span> <span class="s2">&quot;manager&quot;</span><span class="p">:</span>
+                    <span class="n">q</span><span class="o">.</span><span class="n">group</span><span class="o">.</span><span class="n">manager</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">q</span><span class="o">.</span><span class="n">applicant</span><span class="p">)</span>  <span class="c1"># 将申请人加进小组管理员</span>
+                    <span class="n">q</span><span class="o">.</span><span class="n">status</span> <span class="o">=</span> <span class="s2">&quot;pass&quot;</span>
+                    <span class="n">q</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+                <span class="k">elif</span> <span class="n">q</span><span class="o">.</span><span class="n">join_type</span> <span class="o">==</span> <span class="s2">&quot;member&quot;</span><span class="p">:</span>
+                    <span class="n">q</span><span class="o">.</span><span class="n">group</span><span class="o">.</span><span class="n">member</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">q</span><span class="o">.</span><span class="n">applicant</span><span class="p">)</span>   <span class="c1"># 将申请人加进组员</span>
+                    <span class="n">q</span><span class="o">.</span><span class="n">status</span> <span class="o">=</span> <span class="s2">&quot;pass&quot;</span>
+                    <span class="n">q</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="s2">u&quot;已经通过所有申请&quot;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">message_user</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">msg</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="s2">u&quot;只有状态为processing的记录能操作,请确认!&quot;</span>
+            <span class="n">messages</span><span class="o">.</span><span class="n">add_message</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">messages</span><span class="o">.</span><span class="n">ERROR</span><span class="p">,</span> <span class="n">msg</span><span class="p">)</span>
+    <span class="n">pass_apply</span><span class="o">.</span><span class="n">short_description</span> <span class="o">=</span> <span class="s2">u&quot;通过申请&quot;</span>  
+
+    <span class="k">def</span> <span class="nf">reject_apply</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">queryset</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; 拒绝申请 @fanlintao &quot;&quot;&quot;</span>
+        <span class="n">can_treat</span> <span class="o">=</span> <span class="bp">True</span>
+        <span class="k">for</span> <span class="n">q</span> <span class="ow">in</span> <span class="n">queryset</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">q</span><span class="o">.</span><span class="n">status</span> <span class="o">!=</span> <span class="s1">&#39;processing&#39;</span><span class="p">:</span>
+                <span class="n">can_treat</span> <span class="o">=</span> <span class="bp">False</span>
+                <span class="k">continue</span>
+        <span class="k">if</span> <span class="n">can_treat</span><span class="p">:</span>
+            <span class="n">queryset</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">status</span><span class="o">=</span><span class="s2">&quot;reject&quot;</span><span class="p">)</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="s2">u&quot;已经驳回所有申请&quot;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">message_user</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">msg</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="s2">u&quot;只有状态为processing的记录能操作,请确认!&quot;</span>
+            <span class="n">messages</span><span class="o">.</span><span class="n">add_message</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">messages</span><span class="o">.</span><span class="n">ERROR</span><span class="p">,</span> <span class="n">msg</span><span class="p">)</span>
+
+    <span class="n">reject_apply</span><span class="o">.</span><span class="n">short_description</span> <span class="o">=</span> <span class="s2">u&quot;拒绝申请&quot;</span>
+<span class="n">admin</span><span class="o">.</span><span class="n">site</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">Applicant</span><span class="p">,</span> <span class="n">ApplicantAdmin</span><span class="p">)</span>  
+</pre></div>
+
+
+<p>使用定制的<code>add_message</code>方法就能完成一个错误的消息提醒啦。虽然还是比较简陋，只是消息前换了个红色的图标，但对于后台也够用啦。  </p>
+<p>PS:看来还要好好看看Django的messages模块了。  </p>
+            <a href="#" class="go-top">Go Top</a>
+    <div class="comments">
+        <div id="disqus_thread"></div>
+        <script type="text/javascript">
+            /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+            var disqus_shortname = "everlose"; // required: replace example with your forum shortname
+
+            /* * * DON'T EDIT BELOW THIS LINE * * */
+            (function() {
+                var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+                dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+                (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+            })();
+        </script>
+        <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+        <a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+    </div>
+<footer class="footer">
+    <p>&copy; 木头lbj &ndash;
+        Built with <a href="https://github.com/PurePelicanTheme/pure-single">Pure Theme</a>
+        for <a href="http://blog.getpelican.com/">Pelican</a>
+    </p>
+</footer>        </div>
+    </div>
+    </div>
+    <script>
+        var $top = $('.go-top');
+
+        // Show or hide the sticky footer button
+        $(window).scroll(function() {
+            if ($(this).scrollTop() > 200) {
+                $top.fadeIn(200);
+            } else {
+                $top.fadeOut(200);
+            }
+        });
+
+        // Animate the scroll to top
+        $top.click(function(event) {
+            event.preventDefault();
+            $('html, body').animate({scrollTop: 0}, 300);
+        })
+
+        // Makes sure that the href="#" attached to the <a> elements
+        // don't scroll you back up the page.
+        $('body').on('click', 'a[href="#"]', function(event) {
+            event.preventDefault();
+        });
+    </script>
+
+</body>
+</html>

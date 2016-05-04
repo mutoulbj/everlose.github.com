@@ -1,0 +1,291 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="EverLose, EverLose">
+
+
+        <title>Python中的变量绑定 // EverLose // EverLose</title>
+
+    <link href="./theme/images/icons/favicon.ico" rel="icon">
+
+    <link rel="stylesheet" href="http://yui.yahooapis.com/pure/0.5.0/pure-min.css">
+    <link rel="stylesheet" href="./theme/css/font-awesome.min.css">
+    <link rel="stylesheet" href="./theme/css/pure.css">
+    <!-- Custom style -->
+    <link rel="stylesheet" type="text/css" href="./theme/css/style.css">
+    <link rel="stylesheet" href="./theme/css/pygments.css">
+
+    <script src="./theme/js/jquery-2.1.1.min.js"></script>
+    <script src="./theme/js/jquery.fitvids.js"></script>
+    <script type="text/javascript">
+        $(document).ready(function(){
+            $(".content").fitVids();
+        });
+    </script>
+</head>
+
+<body>
+    <div class="pure-g-r" id="layout">
+        <div class="sidebar pure-u">
+            <div class="cover-img" style="background-image: url('http://everlose.qiniudn.com/sanqiao.jpg')">
+                <div class="cover-body">
+                    <header class="header">
+                        <hgroup>
+                            <h1 class="brand-main"><a href=".">EverLose</a></h1>
+                            <p class="tagline">EverLose</p>
+                                <p class="social">
+                                    <a href="http://weibo.com/mutoulbj">
+                                        <i class="fa fa-weibo fa-3x"></i>
+                                    </a>
+                                    <a href="http://github.com/mutoulbj">
+                                        <i class="fa fa-github fa-3x"></i>
+                                    </a>
+                                    <a href="http://twitter.com/mutoulbj">
+                                        <i class="fa fa-twitter fa-3x"></i>
+                                    </a>
+                                </p>
+                        </hgroup>
+                    </header>
+                </div>
+            </div>
+        </div>
+    <div class="pure-u">
+        <div class="content">
+            <section class="post">
+                <header class="post-header">
+                    <h1>Python中的变量绑定</h1>
+                        <p class="post-meta">
+                            <i class="fa fa-book"></i>                                 <a class="post-category" href="./tag/python.html">python</a>
+                        </p>
+                </header>
+            </section>
+            <p>原文<a href="http://alon.horev.net/blog/2013/10/20/argument-binding-in-python/">地址</a>:http://alon.horev.net/blog/2013/10/20/argument-binding-in-python/  </p>
+<p>在最近一次关于pythono中的变量绑定的争论之后,我决定从正反两方面列出一些在不同方法中python的变量绑定情况。我们先从可行的方法开始吧。  </p>
+<div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">add</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">x</span> <span class="o">+</span> <span class="n">y</span>
+
+<span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">partial</span>
+<span class="n">add5_partial</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">add</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
+<span class="n">add5_partial</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>   <span class="c1"># 15  </span>
+
+<span class="n">add5_lambda</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">add</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
+<span class="n">add5_lambda</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>    <span class="c1"># 15  </span>
+</pre></div>
+
+
+<h2>我对partial的抱怨</h2>
+<p><code>partial</code>不是function[译注:我觉得这样的术语还是直接用英文比较准确],并且经常得不到一个function应该得到的结果。<code>partial</code>用纯python很容易实现,但我只能猜想,考虑到性能,它是用C来实现的。来看一些例子:  </p>
+<h3>1.Partial在methods里不能工作：</h3>
+<div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">partial</span>  
+
+<span class="k">class</span> <span class="nc">Cell</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">set_state</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_state</span> <span class="o">=</span> <span class="n">state</span>  
+    <span class="n">set_alive</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">set_state</span><span class="p">,</span> <span class="n">state</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>  
+    <span class="n">set_dead</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">set_state</span><span class="p">,</span> <span class="n">state</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+
+<span class="o">&gt;&gt;&gt;</span><span class="n">Cell</span><span class="p">()</span><span class="o">.</span><span class="n">set_alive</span><span class="p">()</span>
+<span class="n">Traceback</span> <span class="p">(</span><span class="n">most</span> <span class="n">recent</span> <span class="n">call</span> <span class="n">last</span><span class="p">):</span>
+  <span class="n">File</span> <span class="s2">&quot;&lt;stdin&gt;&quot;</span><span class="p">,</span> <span class="n">line</span> <span class="mi">1</span><span class="p">,</span> <span class="ow">in</span> <span class="o">&lt;</span><span class="n">module</span><span class="o">&gt;</span>
+<span class="ne">TypeError</span><span class="p">:</span> <span class="n">set_state</span><span class="p">()</span> <span class="n">takes</span> <span class="n">exactly</span> <span class="mi">2</span> <span class="n">arguments</span> <span class="p">(</span><span class="mi">1</span> <span class="n">given</span><span class="p">)</span>  
+</pre></div>
+
+
+<h4>这是为什么？</h4>
+<p>你知道<code>self</code>总是在调用实例方法的时候被赋值为该实例吗？这是使用descriptors机制来是实现的。为了实现这个功能,function类型需要实现<code>__get__</code>方法。  </p>
+<p>以下表示了方法调用是怎么工作的:  </p>
+<div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Person</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_name</span> <span class="o">=</span> <span class="n">name</span>
+    <span class="k">def</span> <span class="nf">speak</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>  
+        <span class="k">print</span> <span class="s1">&#39;My name is &#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_name</span>  
+
+<span class="o">&gt;&gt;&gt;</span> <span class="n">p</span> <span class="o">=</span> <span class="n">Person</span><span class="p">(</span><span class="s1">&#39;Neo&#39;</span><span class="p">)</span>  
+<span class="o">&gt;&gt;&gt;</span> <span class="n">p</span><span class="o">.</span><span class="n">speak</span><span class="p">()</span>   <span class="c1"># 方法调用  </span>
+<span class="n">My</span> <span class="n">name</span> <span class="ow">is</span> <span class="n">Neo</span>  
+
+<span class="o">&gt;&gt;&gt;</span> <span class="c1"># 那么函数(function)和方法(method)的区别是什么呢？  </span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">method</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">speak</span><span class="p">()</span>  <span class="c1"># 这个method封装了实例和函数  </span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">method</span>  
+<span class="o">&lt;</span><span class="n">bound</span> <span class="n">method</span> <span class="n">Person</span><span class="o">.</span><span class="n">speak</span> <span class="n">of</span> <span class="o">&lt;</span><span class="n">__main__</span><span class="o">.</span><span class="n">Person</span> <span class="nb">object</span> <span class="n">at</span> <span class="mh">0x109d7bb90</span><span class="o">&gt;&gt;</span>  
+<span class="o">&gt;&gt;&gt;</span> <span class="n">method</span><span class="o">.</span><span class="n">im_self</span>    <span class="c1"># 这是self隐藏的地方  </span>
+<span class="o">&lt;</span><span class="n">__main__</span><span class="o">.</span><span class="n">Person</span> <span class="nb">object</span> <span class="n">at</span> <span class="mh">0x109d7bb90</span><span class="o">&gt;&gt;</span>  
+<span class="o">&gt;&gt;&gt;</span> <span class="n">method</span><span class="o">.</span><span class="n">im_func</span>    <span class="c1"># 这是function隐藏的地方  </span>
+<span class="o">&lt;</span><span class="n">function</span> <span class="n">Person</span><span class="o">.</span><span class="n">speak</span> <span class="n">at</span> <span class="mh">0x106163950</span><span class="o">&gt;</span>  
+<span class="o">&gt;&gt;&gt;</span> <span class="n">method</span><span class="p">()</span>          <span class="c1"># 与method.im_func(method.im_self)结果相同  </span>
+<span class="n">My</span> <span class="n">name</span> <span class="ow">is</span> <span class="n">Neo</span>  
+
+<span class="o">&gt;&gt;&gt;</span> <span class="c1"># 从function到method传递了些什么?  </span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">Person</span><span class="p">()</span><span class="o">.</span><span class="n">speak</span><span class="p">()</span>    <span class="c1"># 触发 __getattribute__(&#39;speak&#39;)  </span>
+<span class="o">&gt;&gt;&gt;</span> <span class="c1"># __getattribute__从实例的__dict__中搜索属性  </span>
+<span class="o">&gt;&gt;&gt;</span> <span class="c1"># 然后__getattribute__从类的__dict__中搜索属性  </span>
+<span class="o">&gt;&gt;&gt;</span> <span class="c1"># 当它找到之后,它会检查这个值(function)是不是实现了一个__get__方法  </span>
+<span class="o">&gt;&gt;&gt;</span> <span class="c1"># 如果没有实现__get__，返回这个值  </span>
+<span class="o">&gt;&gt;&gt;</span> <span class="c1"># 如果实现了__get__,返回__get__所返回的值,不管是什么  </span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">method</span> <span class="o">=</span> <span class="n">Person</span><span class="o">.</span><span class="n">speak</span><span class="o">.</span><span class="n">__get__</span><span class="p">(</span><span class="n">Person</span><span class="p">(</span><span class="s1">&#39;Neo&#39;</span><span class="p">))</span>  
+<span class="o">&gt;&gt;&gt;</span> <span class="n">method</span>  
+<span class="o">&gt;&gt;&gt;</span> <span class="o">&lt;</span><span class="n">bound</span> <span class="n">method</span> <span class="err">?</span><span class="o">.</span><span class="n">speak</span> <span class="n">of</span> <span class="o">&lt;</span><span class="n">__main__</span><span class="o">.</span><span class="n">Person</span> <span class="nb">object</span> <span class="n">at</span> <span class="mh">0x7f8527ccbad0</span><span class="o">&gt;&gt;</span>  
+</pre></div>
+
+
+<h3>2.partial不能检查:</h3>
+<div class="highlight"><pre><span></span><span class="o">&gt;&gt;&gt;</span> <span class="kn">import</span> <span class="nn">inspect</span><span class="o">,</span> <span class="nn">functools</span>  
+<span class="o">&gt;&gt;&gt;</span> <span class="n">p</span> <span class="o">=</span> <span class="n">functools</span><span class="o">.</span><span class="n">partial</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="n">x</span> <span class="o">+</span> <span class="n">y</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>  
+<span class="o">&gt;&gt;&gt;</span> <span class="n">inspect</span><span class="o">.</span><span class="n">getargspect</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>  
+<span class="n">Traceback</span> <span class="p">(</span><span class="n">most</span> <span class="n">recent</span> <span class="n">call</span> <span class="n">last</span><span class="p">):</span>
+  <span class="n">File</span> <span class="s2">&quot;&lt;stdin&gt;&quot;</span><span class="p">,</span> <span class="n">line</span> <span class="mi">1</span><span class="p">,</span> <span class="ow">in</span> <span class="o">&lt;</span><span class="n">module</span><span class="o">&gt;</span>
+<span class="ne">AttributeError</span><span class="p">:</span> <span class="s1">&#39;module&#39;</span> <span class="nb">object</span> <span class="n">has</span> <span class="n">no</span> <span class="n">attribute</span> <span class="s1">&#39;getargspect&#39;</span>  
+
+<span class="o">&gt;&gt;&gt;</span> <span class="k">print</span> <span class="n">p</span><span class="o">.</span><span class="n">__doc__</span>    <span class="c1"># 没有保持被包裹的function的__doc__  </span>
+<span class="n">partial</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">keywords</span><span class="p">)</span> <span class="o">-</span> <span class="n">new</span> <span class="n">function</span> <span class="k">with</span> <span class="n">partial</span> <span class="n">application</span>
+    <span class="n">of</span> <span class="n">the</span> <span class="n">given</span> <span class="n">arguments</span> <span class="ow">and</span> <span class="n">keywords</span><span class="o">.</span>  
+</pre></div>
+
+
+<h3>3.partial能够更安全,验证变量的数量和名称:</h3>
+<div class="highlight"><pre><span></span><span class="o">&gt;&gt;&gt;</span> <span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">partial</span>  
+<span class="o">&gt;&gt;&gt;</span> <span class="n">f</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="k">lambda</span><span class="p">:</span> <span class="bp">None</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>   <span class="c1"># 为什么在这里不检查信号?!  </span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">f</span><span class="p">()</span>  
+<span class="n">Traceback</span> <span class="p">(</span><span class="n">most</span> <span class="n">recent</span> <span class="n">call</span> <span class="n">last</span><span class="p">):</span>
+  <span class="n">File</span> <span class="s2">&quot;&lt;stdin&gt;&quot;</span><span class="p">,</span> <span class="n">line</span> <span class="mi">1</span><span class="p">,</span> <span class="ow">in</span> <span class="o">&lt;</span><span class="n">module</span><span class="o">&gt;</span>
+<span class="ne">TypeError</span><span class="p">:</span> <span class="o">&lt;</span><span class="k">lambda</span><span class="o">&gt;</span><span class="p">()</span> <span class="n">takes</span> <span class="n">no</span> <span class="n">arguments</span> <span class="p">(</span><span class="mi">3</span> <span class="n">given</span><span class="p">)</span>  
+</pre></div>
+
+
+<h2>partial的替代品</h2>
+<p>你可以实现一个你自己的返回一个function的partial:  </p>
+<div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">wraps</span>  
+
+<span class="k">def</span> <span class="nf">partial</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="o">*</span><span class="n">a</span><span class="p">,</span> <span class="o">**</span><span class="n">k</span><span class="p">):</span>  
+    <span class="nd">@wraps</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">new_func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>  
+        <span class="k">return</span> <span class="n">func</span><span class="p">(</span><span class="o">*</span><span class="p">(</span><span class="n">a</span> <span class="o">+</span> <span class="n">args</span><span class="p">),</span> <span class="o">**</span><span class="nb">dict</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">new_func</span>  
+</pre></div>
+
+
+<p>备注:不要使用上面的代码,它没有保证键的变量唯一。  </p>
+<p>你也可以使用lambda:  </p>
+<div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Cell</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>  
+   <span class="k">def</span> <span class="nf">set_state</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">):</span>
+       <span class="bp">self</span><span class="o">.</span><span class="n">_state</span> <span class="o">=</span> <span class="n">state</span>  
+   <span class="n">set_alive</span> <span class="o">=</span> <span class="k">lambda</span> <span class="bp">self</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">set_state</span><span class="p">(</span><span class="bp">True</span><span class="p">)</span>
+   <span class="n">set_dead</span> <span class="o">=</span> <span class="k">lambda</span> <span class="bp">self</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">set_state</span><span class="p">(</span><span class="bp">False</span><span class="p">)</span>  
+</pre></div>
+
+
+<h2>关于lambdas,我的问题</h2>
+<p>就像我的朋友@EyalIl说的:  </p>
+<blockquote>
+<p>Lambdas获取变量,partial获取值。<br />
+后者一般更有用。  </p>
+</blockquote>
+<p>这里有一个例子可以说清这个问题:  </p>
+<div class="highlight"><pre><span></span><span class="n">callbacks</span> <span class="o">=</span> <span class="p">[]</span>  
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="mi">5</span><span class="p">):</span>
+    <span class="n">callbacks</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="k">lambda</span><span class="p">:</span> <span class="n">i</span><span class="p">)</span>  
+<span class="o">&gt;&gt;&gt;</span> <span class="k">print</span> <span class="p">[</span><span class="n">callback</span><span class="p">()</span> <span class="k">for</span> <span class="n">callback</span> <span class="ow">in</span> <span class="n">callbacks</span><span class="p">]</span>
+<span class="p">[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">]</span>  
+</pre></div>
+
+
+<p>为什么发生了这个?  </p>
+<p>因为python支持闭包(一个通常很好的东西):  </p>
+<div class="highlight"><pre><span></span><span class="n">var</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="n">f</span> <span class="o">=</span> <span class="k">lambda</span><span class="p">:</span> <span class="n">var</span>
+<span class="k">print</span> <span class="n">f</span><span class="p">()</span>  <span class="c1"># 1</span>
+<span class="n">var</span> <span class="o">=</span> <span class="mi">2</span>  
+<span class="k">print</span> <span class="n">f</span><span class="p">()</span>  <span class="c1"># 2</span>
+<span class="c1"># 但是，但是python是怎么知道的？好吧，function能够hold住外部变量的一个引用  </span>
+<span class="k">print</span> <span class="n">f</span><span class="o">.</span><span class="n">func_closure</span><span class="p">()</span> <span class="c1">#  (&lt;cell at 0x101bdfb40: int object at 0x7fd3e9c106d8&gt;,)  注:我不知道这作者是怎么得出来的,我的测试未得出这样的结果,而是抛出TypeError: &#39;NoneType&#39; object is not callable的错误  </span>
+
+<span class="c1"># 这些cells是什么?cell是一个指向某个外部范围某个名称的一个指针。它hold住了一个允许改变的反射，甚至是改变不可变的数据类型。  </span>
+<span class="k">print</span> <span class="n">f</span><span class="o">.</span><span class="n">func_closure</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">cell_contents</span>  <span class="c1"># 2  </span>
+</pre></div>
+
+
+<p>[注:上面这段代码我在python2.7.3和python3.3.1下测试都没得到作者所说的结果,如果有懂的望赐教.]  </p>
+<p>将不是函数(function)参数的变量绑定为函数(function)变量是一个解决方法:  </p>
+<div class="highlight"><pre><span></span><span class="n">callbacks</span> <span class="o">=</span> <span class="p">[]</span>  
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="mi">5</span><span class="p">):</span>
+    <span class="n">callbacks</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="o">=</span><span class="n">i</span><span class="p">:</span><span class="n">x</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="k">print</span> <span class="p">[</span><span class="n">callback</span><span class="p">()</span> <span class="k">for</span> <span class="n">callback</span> <span class="ow">in</span> <span class="n">callbacks</span><span class="p">]</span>  
+<span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">]</span>  
+</pre></div>
+
+
+<h2>我们能做到更好嘛？</h2>
+<p>我打算提一个跟<code>Javascript</code>的<code>Function.bind</code>功能相似的一个机制。  </p>
+<p>这是我想它所起的作用(这只是一个建议,这些代码不能真正的工作):  </p>
+<div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">add</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>  
+    <span class="k">return</span> <span class="n">x</span> <span class="o">+</span> <span class="n">y</span>
+
+<span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">partial</span>
+<span class="n">add5_partial</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">add</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>     <span class="c1"># 需要一次import</span>
+<span class="n">add5_lambda</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">add</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>  <span class="c1"># 太长了  </span>
+
+<span class="n">add5_bind</span> <span class="o">=</span> <span class="n">add</span><span class="o">.</span><span class="n">bind</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>  <span class="c1"># 最短的  </span>
+
+<span class="kn">import</span> <span class="nn">inspect</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="k">print</span> <span class="n">inspect</span><span class="o">.</span><span class="n">getargspec</span><span class="p">(</span><span class="n">add</span><span class="p">)</span>  
+<span class="n">ArgSpec</span><span class="p">(</span><span class="n">args</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;x&#39;</span><span class="p">,</span> <span class="s1">&#39;y&#39;</span><span class="p">],</span> <span class="n">varargs</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">keywords</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">defaults</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span>  
+<span class="o">&gt;&gt;&gt;</span> <span class="k">print</span> <span class="n">inspect</span><span class="o">.</span><span class="n">getargspect</span><span class="p">(</span><span class="n">add5_bind</span><span class="p">)</span>  <span class="c1"># works with inspect</span>
+<span class="n">ArgSpec</span><span class="p">(</span><span class="n">args</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;y&#39;</span><span class="p">],</span> <span class="n">varargs</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">keywords</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">defaults</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span>  
+</pre></div>
+
+
+<p>如果你想深挖<code>bind</code>，请回复/投票。如果有了足够的反馈,那我就有动力去写一个PEP啦.</p>
+            <a href="#" class="go-top">Go Top</a>
+    <div class="comments">
+        <div id="disqus_thread"></div>
+        <script type="text/javascript">
+            /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+            var disqus_shortname = "everlose"; // required: replace example with your forum shortname
+
+            /* * * DON'T EDIT BELOW THIS LINE * * */
+            (function() {
+                var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+                dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+                (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+            })();
+        </script>
+        <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+        <a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+    </div>
+<footer class="footer">
+    <p>&copy; 木头lbj &ndash;
+        Built with <a href="https://github.com/PurePelicanTheme/pure-single">Pure Theme</a>
+        for <a href="http://blog.getpelican.com/">Pelican</a>
+    </p>
+</footer>        </div>
+    </div>
+    </div>
+    <script>
+        var $top = $('.go-top');
+
+        // Show or hide the sticky footer button
+        $(window).scroll(function() {
+            if ($(this).scrollTop() > 200) {
+                $top.fadeIn(200);
+            } else {
+                $top.fadeOut(200);
+            }
+        });
+
+        // Animate the scroll to top
+        $top.click(function(event) {
+            event.preventDefault();
+            $('html, body').animate({scrollTop: 0}, 300);
+        })
+
+        // Makes sure that the href="#" attached to the <a> elements
+        // don't scroll you back up the page.
+        $('body').on('click', 'a[href="#"]', function(event) {
+            event.preventDefault();
+        });
+    </script>
+
+</body>
+</html>

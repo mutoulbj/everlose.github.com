@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="EverLose, EverLose">
+
+
+        <title>前端那些事儿 // EverLose // EverLose</title>
+
+    <link href="./theme/images/icons/favicon.ico" rel="icon">
+
+    <link rel="stylesheet" href="http://yui.yahooapis.com/pure/0.5.0/pure-min.css">
+    <link rel="stylesheet" href="./theme/css/font-awesome.min.css">
+    <link rel="stylesheet" href="./theme/css/pure.css">
+    <!-- Custom style -->
+    <link rel="stylesheet" type="text/css" href="./theme/css/style.css">
+    <link rel="stylesheet" href="./theme/css/pygments.css">
+
+    <script src="./theme/js/jquery-2.1.1.min.js"></script>
+    <script src="./theme/js/jquery.fitvids.js"></script>
+    <script type="text/javascript">
+        $(document).ready(function(){
+            $(".content").fitVids();
+        });
+    </script>
+</head>
+
+<body>
+    <div class="pure-g-r" id="layout">
+        <div class="sidebar pure-u">
+            <div class="cover-img" style="background-image: url('http://everlose.qiniudn.com/sanqiao.jpg')">
+                <div class="cover-body">
+                    <header class="header">
+                        <hgroup>
+                            <h1 class="brand-main"><a href=".">EverLose</a></h1>
+                            <p class="tagline">EverLose</p>
+                                <p class="social">
+                                    <a href="http://weibo.com/mutoulbj">
+                                        <i class="fa fa-weibo fa-3x"></i>
+                                    </a>
+                                    <a href="http://github.com/mutoulbj">
+                                        <i class="fa fa-github fa-3x"></i>
+                                    </a>
+                                    <a href="http://twitter.com/mutoulbj">
+                                        <i class="fa fa-twitter fa-3x"></i>
+                                    </a>
+                                </p>
+                        </hgroup>
+                    </header>
+                </div>
+            </div>
+        </div>
+    <div class="pure-u">
+        <div class="content">
+            <section class="post">
+                <header class="post-header">
+                    <h1>前端那些事儿</h1>
+                        <p class="post-meta">
+                            <i class="fa fa-book"></i>                                 <a class="post-category" href="./tag/css.html">css</a>
+                                <a class="post-category" href="./tag/js.html">js</a>
+                        </p>
+                </header>
+            </section>
+            <h3>1.IE10中无端不显示png图片</h3>
+<p>一个纠结了近一个月的问题：公司网站，IE10中突然不显示png图片，图片区域空白。而在其他浏览器以及之前各版本的IE中均正常。查看源码加载完全正确，让人完全摸不着头脑。  </p>
+<p>尝试完各种方法，依然误解。今天使用IE的那个破烂不堪的调试工具(按F12调出),突然有了发现，居然在这里显示的图片路径被篡改了，虽然查看源码中的路径正确。于是断定是js在捣鬼。  </p>
+<p>一翻寻找之后发现了这么一段JS:  </p>
+<div class="highlight"><pre><span></span><span class="cm">/*****png透明*****/</span><span class="w"></span>
+<span class="kr">if</span><span class="o">(</span><span class="err">$</span><span class="o">.</span>browser<span class="o">.</span>msie<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="err">$</span><span class="o">.</span>browser<span class="o">.</span>version<span class="o">.</span><span class="nb">substr</span><span class="o">(</span><span class="m">0</span><span class="o">,</span><span class="w"> </span><span class="m">1</span><span class="o">)&lt;=</span><span class="m">7</span><span class="o">)</span><span class="err">{</span><span class="w"></span>
+<span class="o">//</span><span class="w"> </span>some<span class="w"> </span>code<span class="w"></span>
+<span class="err">}</span><span class="w">  </span>
+</pre></div>
+
+
+<p>坑啊，这段代码没有考虑到IE版本到10的情况，于是在版本为10时也会执行，其中有将png图片路径修改的代码(定位到另一个图片)，用于处理png在IE中的透明问题。这样IE10中的所有png图片都透明了。坑死人啊。  </p>
+<p>将代码改成如下，解决了问题(但这种处理方法只能用于jquery&lt;1.9的情况):  </p>
+<div class="highlight"><pre><span></span><span class="cm">/*****png透明*****/</span><span class="w"></span>
+<span class="kr">if</span><span class="o">(</span><span class="err">$</span><span class="o">.</span>browser<span class="o">.</span>msie<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>parseFloat<span class="o">(</span><span class="err">$</span><span class="o">.</span>browser<span class="o">.</span>version<span class="o">)&lt;</span><span class="m">9</span><span class="o">)</span><span class="err">{</span><span class="w"></span>
+<span class="o">//</span><span class="w"> </span>some<span class="w"> </span>code<span class="w"></span>
+<span class="err">}</span><span class="w">  </span>
+</pre></div>
+
+
+<p>这里主要就是要判断IE的版本，在不需要png透明处理的IE版本中不执行该代码。<br />
+<a href="http://www.jquery4u.com/browsers-2/check-ie-version/">这里</a>可以查看判断IE版本的多个方法。  </p>
+<p><em>IE很坑爹，但这次是写js大意了。</em>  </p>
+<hr />
+            <a href="#" class="go-top">Go Top</a>
+    <div class="comments">
+        <div id="disqus_thread"></div>
+        <script type="text/javascript">
+            /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+            var disqus_shortname = "everlose"; // required: replace example with your forum shortname
+
+            /* * * DON'T EDIT BELOW THIS LINE * * */
+            (function() {
+                var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+                dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+                (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+            })();
+        </script>
+        <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+        <a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+    </div>
+<footer class="footer">
+    <p>&copy; 木头lbj &ndash;
+        Built with <a href="https://github.com/PurePelicanTheme/pure-single">Pure Theme</a>
+        for <a href="http://blog.getpelican.com/">Pelican</a>
+    </p>
+</footer>        </div>
+    </div>
+    </div>
+    <script>
+        var $top = $('.go-top');
+
+        // Show or hide the sticky footer button
+        $(window).scroll(function() {
+            if ($(this).scrollTop() > 200) {
+                $top.fadeIn(200);
+            } else {
+                $top.fadeOut(200);
+            }
+        });
+
+        // Animate the scroll to top
+        $top.click(function(event) {
+            event.preventDefault();
+            $('html, body').animate({scrollTop: 0}, 300);
+        })
+
+        // Makes sure that the href="#" attached to the <a> elements
+        // don't scroll you back up the page.
+        $('body').on('click', 'a[href="#"]', function(event) {
+            event.preventDefault();
+        });
+    </script>
+
+</body>
+</html>

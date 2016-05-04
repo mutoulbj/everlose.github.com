@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="EverLose, EverLose">
+
+
+        <title>python正则表达式---re(2) // EverLose // EverLose</title>
+
+    <link href="./theme/images/icons/favicon.ico" rel="icon">
+
+    <link rel="stylesheet" href="http://yui.yahooapis.com/pure/0.5.0/pure-min.css">
+    <link rel="stylesheet" href="./theme/css/font-awesome.min.css">
+    <link rel="stylesheet" href="./theme/css/pure.css">
+    <!-- Custom style -->
+    <link rel="stylesheet" type="text/css" href="./theme/css/style.css">
+    <link rel="stylesheet" href="./theme/css/pygments.css">
+
+    <script src="./theme/js/jquery-2.1.1.min.js"></script>
+    <script src="./theme/js/jquery.fitvids.js"></script>
+    <script type="text/javascript">
+        $(document).ready(function(){
+            $(".content").fitVids();
+        });
+    </script>
+</head>
+
+<body>
+    <div class="pure-g-r" id="layout">
+        <div class="sidebar pure-u">
+            <div class="cover-img" style="background-image: url('http://everlose.qiniudn.com/sanqiao.jpg')">
+                <div class="cover-body">
+                    <header class="header">
+                        <hgroup>
+                            <h1 class="brand-main"><a href=".">EverLose</a></h1>
+                            <p class="tagline">EverLose</p>
+                                <p class="social">
+                                    <a href="http://weibo.com/mutoulbj">
+                                        <i class="fa fa-weibo fa-3x"></i>
+                                    </a>
+                                    <a href="http://github.com/mutoulbj">
+                                        <i class="fa fa-github fa-3x"></i>
+                                    </a>
+                                    <a href="http://twitter.com/mutoulbj">
+                                        <i class="fa fa-twitter fa-3x"></i>
+                                    </a>
+                                </p>
+                        </hgroup>
+                    </header>
+                </div>
+            </div>
+        </div>
+    <div class="pure-u">
+        <div class="content">
+            <section class="post">
+                <header class="post-header">
+                    <h1>python正则表达式---re(2)</h1>
+                        <p class="post-meta">
+                            <i class="fa fa-book"></i>                                 <a class="post-category" href="./tag/re.html">re</a>
+                        </p>
+                </header>
+            </section>
+            <p>对于一些预定义的字符集可以使用转义码可以更加紧凑的表示，re可以识别的转义码有3对，6个，分别为三个字母的大小写，他们的意义是相反的。  </p>
+<blockquote>
+<p>\d : 一个数字<br />
+\D : 一个非数字<br />
+\w : 字母或者数字  <br />
+\W : 非字母，非数字<br />
+\s : 空白符（制表符，空格，换行符等）<br />
+\S : 非空白符  </p>
+</blockquote>
+<p>如果想指定匹配的内容在文本的相对位置，可以使用锚定，跟转义码类似。   </p>
+<blockquote>
+<p>^ 字符或行的开始<br />
+$ 字符或行的结束<br />
+\A 字符串的开始<br />
+\Z 字符串结束<br />
+\b 一个单词开头或者末尾的空串<br />
+\B 不在一个单词开头或末尾的空串  </p>
+</blockquote>
+<div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">re</span>
+<span class="n">the_str</span> <span class="o">=</span> <span class="s2">&quot;This is some text -- with punctuation&quot;</span>  
+<span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s1">r&#39;^\w+&#39;</span><span class="p">,</span> <span class="n">the_str</span><span class="p">)</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>       <span class="c1"># This</span>
+<span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s1">r&#39;\A\w+&#39;</span><span class="p">,</span> <span class="n">the_str</span><span class="p">)</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>      <span class="c1"># This  </span>
+<span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s1">r&#39;\w+\S*$&#39;</span><span class="p">,</span> <span class="n">the_str</span><span class="p">)</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>    <span class="c1"># punctuation  </span>
+<span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s1">r&#39;\w+\S*\Z&#39;</span><span class="p">,</span> <span class="n">the_str</span><span class="p">)</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>   <span class="c1"># punctuation  </span>
+<span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s1">r&#39;\w*t\W*&#39;</span><span class="p">,</span> <span class="n">the_str</span><span class="p">)</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>    <span class="c1"># text --  </span>
+<span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s1">r&#39;\bt\w+&#39;</span><span class="p">,</span> <span class="n">the_str</span><span class="p">)</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>     <span class="c1"># text  </span>
+<span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s1">r&#39;\Bt*\B&#39;</span><span class="p">,</span> <span class="n">the_str</span><span class="p">)</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>     <span class="c1"># 没有匹配  </span>
+</pre></div>
+
+
+<p>用组来解析匹配，简单的说就是在一个正则表达式中有几个小括号()将匹配的表达式分成不同的组，使用group()函数来获取某个组的匹配，其中0为整个正则表达式所匹配的内容，后面从1开始从左往右依次获取每个组的匹配，即每个小括号中的匹配。使用groups()可以获取所有的匹配内容。  </p>
+<div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">re</span>  
+<span class="n">the_str</span> <span class="o">=</span> <span class="s2">&quot;--aabb123bbaa&quot;</span>  
+<span class="n">pattern</span> <span class="o">=</span> <span class="s1">r&#39;(\W+)([a-z]+)(\d+)(\D+)&#39;</span>  
+<span class="n">match</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">pattern</span><span class="p">,</span> <span class="n">the_str</span><span class="p">)</span>    
+<span class="n">match</span><span class="o">.</span><span class="n">groups</span><span class="p">()</span>    <span class="c1"># (&#39;--&#39;, &#39;aabb&#39;, &#39;123&#39;, &#39;bbaa&#39;) </span>
+<span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>    <span class="c1"># &#39;--aabb123bbaa&#39;  </span>
+<span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>    <span class="c1"># &#39;--&#39;  </span>
+<span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>    <span class="c1"># &#39;aabb&#39;  </span>
+<span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>    <span class="c1"># &#39;123&#39;  </span>
+<span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>    <span class="c1"># &#39;bbaa&#39;</span>
+</pre></div>
+
+
+<p>python对分组的语法做了扩展，我们可以对每个分组进行命名，这样便可以使用名称来调用。语法:<code>(?P&lt;name&gt;pattern)</code>,使用groupdict()可以返回一个包含了组名的字典。  </p>
+<div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">re</span>  
+<span class="n">the_str</span> <span class="o">=</span> <span class="s2">&quot;--aabb123bbaa&quot;</span>  
+<span class="n">pattern</span> <span class="o">=</span> <span class="s1">r&#39;(?P&lt;not_al_and_num&gt;\W+)(?P&lt;al&gt;[a-z]+)(?P&lt;num&gt;\d+)(?P&lt;not_num&gt;\D+)&#39;</span>  
+<span class="n">match</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">pattern</span><span class="p">,</span> <span class="n">the_str</span><span class="p">)</span>    
+<span class="n">match</span><span class="o">.</span><span class="n">groups</span><span class="p">()</span>    <span class="c1"># (&#39;--&#39;, &#39;aabb&#39;, &#39;123&#39;, &#39;bbaa&#39;)  </span>
+<span class="n">match</span><span class="o">.</span><span class="n">groupdict</span><span class="p">()</span> <span class="c1"># {&#39;not_al_and_num&#39;: &#39;--&#39;, &#39;not_num&#39;: &#39;bbaa&#39;, &#39;num&#39;: &#39;123&#39;, &#39;al&#39;: &#39;aabb&#39;}  </span>
+<span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>                    <span class="c1"># &#39;--aabb123bbaa&#39;  </span>
+<span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>                    <span class="c1"># &#39;--&#39;  </span>
+<span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>                    <span class="c1"># &#39;aabb&#39;  </span>
+<span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>                    <span class="c1"># &#39;123&#39;  </span>
+<span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>                    <span class="c1"># &#39;bbaa&#39;   </span>
+<span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="s1">&#39;not_al_and_num&#39;</span><span class="p">)</span>    <span class="c1"># &#39;--&#39;</span>
+<span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="s1">&#39;al&#39;</span><span class="p">)</span>                 <span class="c1"># &#39;aabb&#39;  </span>
+<span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="s1">&#39;num&#39;</span><span class="p">)</span>               <span class="c1"># &#39;123&#39; &#39;</span>
+<span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="s1">&#39;not_num&#39;</span><span class="p">)</span>            <span class="c1"># &#39;bbaa&#39;</span>
+</pre></div>
+
+
+<p>以上的group()方法在使用的时候需要注意，只有在有匹配的时候才会正常运行，否则会抛错，所以在不能保证有匹配而又要输出匹配结果的时候，必须做校验。  </p>
+<p>在re中可以设置不通的标志，也就是search()和compile()等中都包含的缺省变量flag。使用标志可以进行完成一些特殊的要求，如忽略大小写，多行搜索等。  </p>
+<div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">re</span>  
+<span class="n">the_str</span> <span class="o">=</span> <span class="s2">&quot;this Text&quot;</span>  
+<span class="n">re</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="s1">r&#39;\bt\w+&#39;</span><span class="p">,</span> <span class="n">the_str</span><span class="p">)</span>   <span class="c1"># [&#39;this&#39;]  </span>
+<span class="n">re</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="s1">r&#39;\bt\w+&#39;</span><span class="p">,</span> <span class="n">the_str</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">IGNORECASE</span><span class="p">)</span> <span class="c1"># [&#39;this&#39;, &#39;Text&#39;]  </span>
+</pre></div>
+
+
+<p>关于搜索选项有很多，具体可<a href="http://docs.python.org/2/library/re.html#module-re">查看文档</a> http://docs.python.org/2/library/re.html#module-re  </p>
+            <a href="#" class="go-top">Go Top</a>
+    <div class="comments">
+        <div id="disqus_thread"></div>
+        <script type="text/javascript">
+            /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+            var disqus_shortname = "everlose"; // required: replace example with your forum shortname
+
+            /* * * DON'T EDIT BELOW THIS LINE * * */
+            (function() {
+                var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+                dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+                (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+            })();
+        </script>
+        <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+        <a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+    </div>
+<footer class="footer">
+    <p>&copy; 木头lbj &ndash;
+        Built with <a href="https://github.com/PurePelicanTheme/pure-single">Pure Theme</a>
+        for <a href="http://blog.getpelican.com/">Pelican</a>
+    </p>
+</footer>        </div>
+    </div>
+    </div>
+    <script>
+        var $top = $('.go-top');
+
+        // Show or hide the sticky footer button
+        $(window).scroll(function() {
+            if ($(this).scrollTop() > 200) {
+                $top.fadeIn(200);
+            } else {
+                $top.fadeOut(200);
+            }
+        });
+
+        // Animate the scroll to top
+        $top.click(function(event) {
+            event.preventDefault();
+            $('html, body').animate({scrollTop: 0}, 300);
+        })
+
+        // Makes sure that the href="#" attached to the <a> elements
+        // don't scroll you back up the page.
+        $('body').on('click', 'a[href="#"]', function(event) {
+            event.preventDefault();
+        });
+    </script>
+
+</body>
+</html>

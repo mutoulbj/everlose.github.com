@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="EverLose, EverLose">
+
+
+        <title>扩展Django的ORM // EverLose // EverLose</title>
+
+    <link href="./theme/images/icons/favicon.ico" rel="icon">
+
+    <link rel="stylesheet" href="http://yui.yahooapis.com/pure/0.5.0/pure-min.css">
+    <link rel="stylesheet" href="./theme/css/font-awesome.min.css">
+    <link rel="stylesheet" href="./theme/css/pure.css">
+    <!-- Custom style -->
+    <link rel="stylesheet" type="text/css" href="./theme/css/style.css">
+    <link rel="stylesheet" href="./theme/css/pygments.css">
+
+    <script src="./theme/js/jquery-2.1.1.min.js"></script>
+    <script src="./theme/js/jquery.fitvids.js"></script>
+    <script type="text/javascript">
+        $(document).ready(function(){
+            $(".content").fitVids();
+        });
+    </script>
+</head>
+
+<body>
+    <div class="pure-g-r" id="layout">
+        <div class="sidebar pure-u">
+            <div class="cover-img" style="background-image: url('http://everlose.qiniudn.com/sanqiao.jpg')">
+                <div class="cover-body">
+                    <header class="header">
+                        <hgroup>
+                            <h1 class="brand-main"><a href=".">EverLose</a></h1>
+                            <p class="tagline">EverLose</p>
+                                <p class="social">
+                                    <a href="http://weibo.com/mutoulbj">
+                                        <i class="fa fa-weibo fa-3x"></i>
+                                    </a>
+                                    <a href="http://github.com/mutoulbj">
+                                        <i class="fa fa-github fa-3x"></i>
+                                    </a>
+                                    <a href="http://twitter.com/mutoulbj">
+                                        <i class="fa fa-twitter fa-3x"></i>
+                                    </a>
+                                </p>
+                        </hgroup>
+                    </header>
+                </div>
+            </div>
+        </div>
+    <div class="pure-u">
+        <div class="content">
+            <section class="post">
+                <header class="post-header">
+                    <h1>扩展Django的ORM</h1>
+                        <p class="post-meta">
+                            <i class="fa fa-book"></i>                                 <a class="post-category" href="./tag/django.html">django</a>
+                                <a class="post-category" href="./tag/orm.html">orm</a>
+                        </p>
+                </header>
+            </section>
+            <p>注：译文，<a href="http://blog.safaribooksonline.com/2013/11/06/extending-the-django-orm/">原文地址</a>http://blog.safaribooksonline.com/2013/11/06/extending-the-django-orm/  </p>
+<p>Django的对象关系映射(ORM)在代码和数据库之间搭起了一架桥梁。这篇文章中我打算简要的说下什么是ORM以及该怎么去使用它。最重要的是怎么使用专门的SQL定制和扩展ORM。
+最后，我会说几点为什么在不选择标准ORM时需要特别的小心。现在开始吧。  </p>
+<h2>ORM的什么吸引我?</h2>
+<p>首先，也是最重要的，ORM会将业务逻辑封装进应用中，而不是使用数据库。将应用的业务逻辑放进ORM让我们的代码更容易理解和维护。他让我们不用再一直去猜应用到底是怎么工作的。  </p>
+<p>ORM帮我们在数据库返回和插入数据时进行验证。在对数据的完整性和安全性非常关心的应用中，这一步是起决定性作用的。虽然数据库中的类型检查也非常的棒，但是Django的ORM能帮助
+我们在数据没有到达数据库的时候验证业务规则。此外，也能保证数据库返回的数据是我们所期望的。  </p>
+<p><code>MyModelClass.objects.all()</code> 是ORM的一个非常简单的使用ORM的例子。这行代码返回数据表中的所有内容，与<code>select * from MyModelTable</code>结果一样。还有很多其他的<a href="https://docs.djangoproject.com/en/dev/ref/models/querysets/#queryset-api">用法</a>,
+这不是这篇文章的关注的。在你开始使用定制的SQL语句之前你将会非常想知道ORM是怎么工作的。  </p>
+<h2>为什么我需要定制ORM?</h2>
+<p>在实践中，我见过几个例子。首先是当没有明显的查询方法的时候你会这么想。然而这对于定制ORM不是一个很好的假定。当你需要使用SQL的时候，试着使用对象和对象关系来思考，而不是使用数据表。
+这可能会得到一个很好的查询方法。举个例子，很多的SQL用户也许想写下面的语句:  </p>
+<div class="highlight"><pre><span></span><span class="k">SELECT</span>
+<span class="ss">&quot;user_user&quot;</span><span class="p">.</span><span class="ss">&quot;id&quot;</span><span class="p">,</span> <span class="ss">&quot;user_user&quot;</span><span class="p">.</span><span class="ss">&quot;password&quot;</span><span class="p">,</span>  
+<span class="ss">&quot;user_user&quot;</span><span class="p">.</span><span class="ss">&quot;last_login&quot;</span><span class="p">,</span> <span class="ss">&quot;user_user&quot;</span><span class="p">.</span><span class="ss">&quot;name&quot;</span><span class="p">,</span>
+<span class="ss">&quot;user_user&quot;</span><span class="p">.</span><span class="ss">&quot;date&quot;</span><span class="p">,</span> <span class="ss">&quot;user_user&quot;</span><span class="p">.</span><span class="ss">&quot;level&quot;</span>  
+<span class="k">FROM</span>  
+<span class="ss">&quot;user_user&quot;</span>
+<span class="k">INSERT</span> <span class="k">JOIN</span>  
+<span class="ss">&quot;address_address&quot;</span>
+<span class="k">ON</span> <span class="p">(</span><span class="ss">&quot;user_user&quot;</span><span class="p">.</span><span class="ss">&quot;id&quot;</span> <span class="o">=</span> <span class="ss">&quot;address_address&quot;</span><span class="p">.</span><span class="ss">&quot;user_id&quot;</span><span class="p">)</span>
+<span class="k">WHERE</span> <span class="p">(</span><span class="ss">&quot;user_user&quot;</span><span class="p">.</span><span class="ss">&quot;name&quot;</span> <span class="k">IN</span> <span class="p">(</span><span class="n">hello</span><span class="p">,</span> <span class="n">world</span><span class="p">)</span> <span class="k">AND</span> <span class="ss">&quot;address_address&quot;</span><span class="p">.</span><span class="ss">&quot;street&quot;</span> <span class="o">=</span> <span class="n">main</span><span class="p">)</span>  
+</pre></div>
+
+
+<p>如果这些数据模型创建的正确的话，相应的Python代码非常简单:  </p>
+<div class="highlight"><pre><span></span><span class="n">User</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">name__in</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;hello&#39;</span><span class="p">,</span> <span class="s1">&#39;world&#39;</span><span class="p">],</span> <span class="n">address_street</span><span class="o">=</span><span class="s1">&#39;main&#39;</span><span class="p">)</span>  
+</pre></div>
+
+
+<p>对于倾向使用SQL的用户，我建议常常往回退一步。对于Python/Django的重度用户，我建议记住用SQL的思维来想想将会创建的是什么。使用SQL来扩展和定制的原因更正确的说应该是：
+有一个非常特殊的逻辑或者能获得更好的ORM不能提供的性能。  </p>
+<h2>我怎么定制查询?</h2>
+<p>第一个定制查询的选择是使用<code>extra</code>方法，文档很详细。Django文档中提供了很棒的<a href="https://docs.djangoproject.com/en/dev/ref/models/querysets/#extra">例子</a>。
+我将会使用<code>raw</code>来完成一个很好的用例，<code>raw</code>的<a href="https://docs.djangoproject.com/en/dev/topics/db/sql/#executing-raw-queries">文档</a>同样很棒。然而这些例子都不怎么重要。
+我想让你通过ORM来使用用先进数据库特性的优势。  </p>
+<p>举个例子，现在你的应用需要展现一个聚合了很多值的大数据，需要创建大量的SQL语句。第一步，你将创建一个存储过程来封装这个查询，然后创建一个SQL function来让方便调用这个查询（你同样需要
+创建一个数据表，但那都是标准的SQL）。为了性能，你也许你将这个逻辑移到了数据库中去处理。所以，这时候你的应用只能在数据库完成数据聚合的时候才能处理业务逻辑。  </p>
+<p>我们同样假设你有一个名为<code>aggregate_profile_metrics</code>的SQL方法来帮助你的应用提高性能。使用标准的ORM的话你就没这么幸运了。SQL方法只有在使用views和tables的时候才能使用。现在看看<code>raw</code>
+查询的威力。首先定义一个model。  </p>
+<div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">ProfileMetric</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Model</span><span class="p">):</span>
+    <span class="n">avg_posts_per_day</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">IntegerField</span><span class="p">()</span>
+    <span class="n">avg_comments_per_day</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">IntegerField</span><span class="p">()</span>
+    <span class="n">avg_respondees_per_day</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">IntegerField</span><span class="p">()</span>
+
+    <span class="k">class</span> <span class="nc">Meta</span><span class="p">():</span>
+        <span class="n">managed</span> <span class="o">=</span> <span class="bp">False</span>
+        <span class="n">db_table</span> <span class="o">=</span> <span class="s1">&#39;fake_table_name&#39;</span>  <span class="c1"># This is the trickier part  </span>
+</pre></div>
+
+
+<p>注意这个model是完全与数据相关的，我们能够在我们所有不同的数据表中进行聚合调用。当数据库足够大，你拥有数十个表和数百万用户的时候，这个表就有一定规模了。由于这些数据很可能随时更新，这时候SQL方法
+的效率优势就显示出来了。现在进入最有趣的部分，使用下面的方法你将很容易达到调用SQL方法的目的。  </p>
+<div class="highlight"><pre><span></span><span class="n">query</span> <span class="o">=</span> <span class="s2">&quot;select avg_posts_per_day, avg_comments_per_day, avg_respondees_per_day </span>
+         <span class="kn">from</span> <span class="nn">table</span><span class="p">(</span><span class="n">aggregate_profile_metrics</span><span class="p">(</span><span class="o">%</span><span class="n">s</span><span class="p">))</span><span class="s2">&quot;  </span>
+
+<span class="n">profile_metrics</span> <span class="o">=</span> <span class="n">ProfileMetric</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">raw</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="p">[</span><span class="mi">283844238</span><span class="p">])</span>
+</pre></div>
+
+
+<p>使用上面的查询你能够调用SQL方法，但是这太痛苦了。注意，这个SQL方法调用了一个参数<code>user_id</code>来获取数据，但是我们没有将参数直接传递进去。如果你的SQL方法不需要调用参数，你应该使用数据库的<code>view</code>。
+使用这个方法，你现在可以使用<code>profile_metics</code>,除了一些细小的区别外，就像使用一个一般的queryset一样（查看<a href="https://docs.djangoproject.com/en/dev/ref/models/querysets/#django.db.models.query.QuerySet.raw">RawQUeryset和一般Queryset的区别</a>）。  </p>
+<p>除了这点，Django还允许用户不通过model进行数据库操作。我极力反对这么做。记住不使用model直接进行数据库操作是没多少理由的。那些使用了这个的例子都是非常极端的情况。只要使用了不基于model的raw查询，
+ORM的作用就消失了。从这点来说，就没有使用Django的必要了。  </p>
+<p>当使用<code>.raw</code>的时候，需要记住一下几点。  </p>
+<ol>
+<li>确认这些查询不能使用Django的ORM完成。  </li>
+<li>确认需要去创建定制的SQL(比如:为了获得SQL function的性能或者是在遗留应用中进行的操作)。  </li>
+<li>通过QuerySet中的<code>.raw</code>来创建你定制的SQL调用。  </li>
+<li>不要直接使用<a href="https://docs.djangoproject.com/en/dev/topics/db/sql/#connections-and-cursors">connection</a>的<code>curser.execute</code>。  </li>
+</ol>
+<p>现在，你知道Django的ORM是非常强大的。当你想使用SQL语句和命令的时候记住这一点。记住下面关于何时使用raw SQL的建议。  </p>
+<ol>
+<li>不要使用raw SQL(当你能用其他办法解决的时候)。  </li>
+<li>使用ORM中的对象关系。  </li>
+<li>试着在使用raw前使用extra，  </li>
+<li>将raw作为最后一个选择。 </li>
+</ol>
+            <a href="#" class="go-top">Go Top</a>
+    <div class="comments">
+        <div id="disqus_thread"></div>
+        <script type="text/javascript">
+            /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+            var disqus_shortname = "everlose"; // required: replace example with your forum shortname
+
+            /* * * DON'T EDIT BELOW THIS LINE * * */
+            (function() {
+                var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+                dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+                (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+            })();
+        </script>
+        <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+        <a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+    </div>
+<footer class="footer">
+    <p>&copy; 木头lbj &ndash;
+        Built with <a href="https://github.com/PurePelicanTheme/pure-single">Pure Theme</a>
+        for <a href="http://blog.getpelican.com/">Pelican</a>
+    </p>
+</footer>        </div>
+    </div>
+    </div>
+    <script>
+        var $top = $('.go-top');
+
+        // Show or hide the sticky footer button
+        $(window).scroll(function() {
+            if ($(this).scrollTop() > 200) {
+                $top.fadeIn(200);
+            } else {
+                $top.fadeOut(200);
+            }
+        });
+
+        // Animate the scroll to top
+        $top.click(function(event) {
+            event.preventDefault();
+            $('html, body').animate({scrollTop: 0}, 300);
+        })
+
+        // Makes sure that the href="#" attached to the <a> elements
+        // don't scroll you back up the page.
+        $('body').on('click', 'a[href="#"]', function(event) {
+            event.preventDefault();
+        });
+    </script>
+
+</body>
+</html>

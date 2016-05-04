@@ -1,0 +1,483 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="EverLose, EverLose">
+
+
+        <title>在BAE中部署Django // EverLose // EverLose</title>
+
+    <link href="./theme/images/icons/favicon.ico" rel="icon">
+
+    <link rel="stylesheet" href="http://yui.yahooapis.com/pure/0.5.0/pure-min.css">
+    <link rel="stylesheet" href="./theme/css/font-awesome.min.css">
+    <link rel="stylesheet" href="./theme/css/pure.css">
+    <!-- Custom style -->
+    <link rel="stylesheet" type="text/css" href="./theme/css/style.css">
+    <link rel="stylesheet" href="./theme/css/pygments.css">
+
+    <script src="./theme/js/jquery-2.1.1.min.js"></script>
+    <script src="./theme/js/jquery.fitvids.js"></script>
+    <script type="text/javascript">
+        $(document).ready(function(){
+            $(".content").fitVids();
+        });
+    </script>
+</head>
+
+<body>
+    <div class="pure-g-r" id="layout">
+        <div class="sidebar pure-u">
+            <div class="cover-img" style="background-image: url('http://everlose.qiniudn.com/sanqiao.jpg')">
+                <div class="cover-body">
+                    <header class="header">
+                        <hgroup>
+                            <h1 class="brand-main"><a href=".">EverLose</a></h1>
+                            <p class="tagline">EverLose</p>
+                                <p class="social">
+                                    <a href="http://weibo.com/mutoulbj">
+                                        <i class="fa fa-weibo fa-3x"></i>
+                                    </a>
+                                    <a href="http://github.com/mutoulbj">
+                                        <i class="fa fa-github fa-3x"></i>
+                                    </a>
+                                    <a href="http://twitter.com/mutoulbj">
+                                        <i class="fa fa-twitter fa-3x"></i>
+                                    </a>
+                                </p>
+                        </hgroup>
+                    </header>
+                </div>
+            </div>
+        </div>
+    <div class="pure-u">
+        <div class="content">
+            <section class="post">
+                <header class="post-header">
+                    <h1>在BAE中部署Django</h1>
+                        <p class="post-meta">
+                            <i class="fa fa-book"></i>                                 <a class="post-category" href="./tag/django.html">django</a>
+                                <a class="post-category" href="./tag/bae.html">bae</a>
+                        </p>
+                </header>
+            </section>
+            <p>之前做了个网站的demo，前日有空，便想弄到bae上试试。其实，部署起来并不复杂，但是限于自己的水平，又是第一次做部署的事情，其中还是遇到很多的麻烦，弄了很久才成功。完成后想想，其实都是些很小细节上出错。今天记录点东西，便于自己日后查阅，也希望能给一些朋友带来些帮助。  </p>
+<p>首先，我们需要一个bae的账号，由于bae还是内测，要用python需要激活码，这个大家可以发邮件索取或者等着bae放码的时候去抢一个。这些不多说。  </p>
+<p>拥有账号后，进入bae，创建一个应用，语言选择python，然后创建一个版本，之后会获取一个svn地址。bae是使用svn进行代码的上传和管理的，所以如果不懂svn的话，先学下咯，然后在电脑上安装好svn。这些都不多说啦。bae上有相关的文档。    </p>
+<p>使用svn将代码checkout到本地。接下来就要开始部署的工作啦。(下面的文字摘自bae文档，可以前往这个地址地址查看。  </p>
+<ol>
+<li>
+<p>Django<br />
+   BAE预装了Django 1.4版本。如果您需要将基于Django的应用移植到BAE环境中，需要注意如下事项：</p>
+</li>
+<li>
+<p>CACHE  </p>
+</li>
+<li>Cache后端只支持memcache；  </li>
+<li>通过bae.core.const.CACHE_ADDR获得Cache地址；  </li>
+</ol>
+<blockquote>
+<p>配置示例  </p>
+</blockquote>
+<div class="highlight"><pre><span></span><span class="n">CACHES</span> <span class="o">=</span> <span class="p">{</span>
+<span class="s1">&#39;default&#39;</span><span class="p">:</span> <span class="p">{</span>
+<span class="s1">&#39;BACKEND&#39;</span><span class="p">:</span> <span class="s1">&#39;django.core.cache.backends.memcached.MemcachedCache&#39;</span><span class="p">,</span>
+<span class="s1">&#39;LOCATION’: const.CACHE_ADDR,</span>
+<span class="s1">&#39;TIMEOUT&#39;</span><span class="p">:</span> <span class="mi">60</span><span class="p">,</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+
+
+<ol>
+<li>DATABASE    </li>
+<li>DATABASE后端目前只支持MySQL；  </li>
+<li>从bae.core.const中获取host, port, user, password；</li>
+<li>请通过BAE管理界面，使用PHPMyAdmin来管理维护database, table;    <blockquote>
+<p>配置示例  </p>
+</blockquote>
+</li>
+</ol>
+<p><code>python
+   from bae.core import const
+   DATABASES = {
+   'default': {
+   'ENGINE': 'django.db.backends.mysql',
+   'NAME': 'cluster11db3',
+   'USER': const.MYSQL_USER,
+   'PASSWORD': const.MYSQL_PASS,
+   'HOST': const.MYSQL_HOST,
+   'PORT': const.MYSQL_PORT,
+    }
+   }</code>   </p>
+<ol>
+<li>MAIL  </li>
+<li>MAIL后端请选用BAE新增的BCMS backend；  </li>
+<li>必须配置EMAIL_BCMS_QNAME。可从BAE管理界面上获取bcms_qname；  <blockquote>
+<p>配置示例  </p>
+</blockquote>
+</li>
+</ol>
+<p><code>python
+   EMAIL_BACKEND = 'django.core.mail.backends.bcms.EmailBackend'
+   EMAIL_BCMS_QNAME = '13fe1db4a291e6a57574071e8ff3a52c'</code>  </p>
+<ol>
+<li>SESSION  </li>
+<li>SESSION后端支持Cache backend和DB backend；</li>
+<li>Cache backend是基于Cache实现的，因此必须配置前述与Cache相关的选项;</li>
+<li>DB backend是基于MySQL实现的，因此必须配置前述跟DATABASE相关的选项;  <blockquote>
+<p>配置示例  </p>
+</blockquote>
+</li>
+</ol>
+<p><code>python
+   SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
+   ###或者
+   SESSION_ENGINE = 'django.contrib.sessions.backends.db'</code>  </p>
+<ol>
+<li>ADMIN  </li>
+<li>在项目目录下创建static目录；  </li>
+<li>从Django1.4源码中，将<code>django/contrib/admin/static/admin</code>目录拷贝到刚创建的static目录下；  </li>
+<li>
+<p>修改app.conf，加入对静态文件的支持； </p>
+</li>
+<li>
+<p>LOGGING   </p>
+</li>
+<li>Django使用Python标准库中的logging模块用于日志输出；logging 模块在默认情况下将日志输出到stderr;  </li>
+<li>
+<p>设置<code>WSGIApplication(app, stderr=”log”)</code>，将输出到标准出错的日志，重定向到BAE日志服务器。  </p>
+</li>
+<li>
+<p>开发示例  </p>
+</li>
+</ol>
+<p>下面以Django官方网站的示例程序为例，介绍如何在BAE环境中创建Django应用。该示例用到了MySQL服务。  </p>
+<blockquote>
+<p>步骤一： 在本机创建Django项目并调试通过。  </p>
+</blockquote>
+<ul>
+<li>您需要在自己的开发机上安装Python2.7.2、Django1.4、MySQLdb；  </li>
+<li>创建工作目录:mkdir django_root &amp;&amp; cd django_root；  </li>
+<li>按照Django开发指南的描述，在本机建立Django Demo项目，并在本地调试通过；  </li>
+<li>完成turorial 1-4后，目录结构如下：   </li>
+</ul>
+<div class="highlight"><pre><span></span><span class="n">django_root</span><span class="o">/</span>
+<span class="n">djangodemo</span><span class="o">/</span>
+<span class="n">djangodemo</span><span class="o">/</span>
+<span class="n">polls</span><span class="o">/</span>
+<span class="n">templates</span><span class="o">/</span>
+<span class="n">admin</span><span class="o">/</span>
+<span class="n">polls</span><span class="o">/</span>
+<span class="n">manager</span><span class="o">.</span><span class="n">py</span>  
+</pre></div>
+
+
+<p>其中templates目录用来保存模板相关的文件。</p>
+<blockquote>
+<p>步骤二： 将项目移植到BAE。</p>
+<ul>
+<li>在BAE上创建一个Python项目Django Demo；  </li>
+<li>创建一个版本，然后通过SVN将项目更新到自己的开发机上；  </li>
+<li>将第一步创建的Django项目拷贝过来，步骤如下：  </li>
+</ul>
+</blockquote>
+<div class="highlight"><pre><span></span>cd djangodemo
+ls -l ###目录下应该有index.py, app.conf, favicon.ico三个文件；
+cp -R XXX/django_root/djangodemo/*
+</pre></div>
+
+
+<ul>
+<li>从Django1.4安装目录，或者源码目录，将Admin相关的静态文件拷贝过来:   </li>
+</ul>
+<div class="highlight"><pre><span></span>mkdir -p static
+cp -R DJANGO_SOURCE/django/contrib/admin/static/admin static/  
+</pre></div>
+
+
+<ul>
+<li>修改settings.py，使用BAE环境提供的MySQL数据库，并通过BAE管理界面提供的PHPMyAdmin来创建 database和table。  </li>
+<li>修改index.py，修改后的index.py如下所示：  </li>
+</ul>
+<div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>  
+<span class="kn">import</span> <span class="nn">sys</span>  
+<span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s1">&#39;DJANGO_SETTINGS_MODULE&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;djangodemo.settings&#39;</span>  
+<span class="n">path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">__file__</span><span class="p">))</span> <span class="o">+</span> <span class="s1">&#39;/djangodemo&#39;</span>  
+<span class="k">if</span> <span class="n">path</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="p">:</span>
+<span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">path</span><span class="p">)</span>  
+<span class="kn">from</span> <span class="nn">django.core.handlers.wsgi</span> <span class="kn">import</span> <span class="n">WSGIHandler</span>
+<span class="kn">from</span> <span class="nn">bae.core.wsgi</span> <span class="kn">import</span> <span class="n">WSGIApplication</span>
+<span class="n">application</span> <span class="o">=</span> <span class="n">WSGIApplication</span><span class="p">(</span><span class="n">WSGIHandler</span><span class="p">())</span>
+</pre></div>
+
+
+<ul>
+<li>修改app.conf，增加对静态文件的支持。修改后的app.conf如下所示：  </li>
+</ul>
+<div class="highlight"><pre><span></span>handlers:   
+- url : /static/(.*)   
+script : /static/$1   
+- url : /.*   
+script : index.py
+- expire : .jpg modify 10 years
+- expire : .swf modify 10 years
+- expire : .png modify 10 years
+- expire : .gif modify 10 years
+- expire : .JPG modify 10 years
+- expire : .ico modify 10 years
+</pre></div>
+
+
+<p>完成上述步骤后，就可以访问您的Django应用了。  </p>
+<p>其实，按照如上的步骤部署一个简单的django应用足够了。实质上，就是几个文件的配置而已，其中一些代码需要根据自己的实际情况进行相应的修改。下面给出一些我的一些相关配置文件。  </p>
+<p>代码结构如下：  </p>
+<div class="highlight"><pre><span></span>appidxxxx (checkout下来的文件目录）
+    |____1 (checkout下来的版本号)
+        |____yukiyam (这是你的项目，整体复制到这里吧)
+            |____account
+            |____blog
+            |____static
+            |____templates
+            |____yukiyam
+            |____manage.py
+            |____app.conf
+            |____index.py
+</pre></div>
+
+
+<blockquote>
+<p>index.py:</p>
+</blockquote>
+<div class="highlight"><pre><span></span><span class="c1">#-*- coding:utf-8 -*-</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s1">&#39;DJANGO_SETTINGS_MODULE&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;yukiyam.settings&#39;</span> <span class="c1">#settings文件</span>
+<span class="n">path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">__file__</span><span class="p">))</span> <span class="o">+</span> <span class="s1">&#39;/yukiyam&#39;</span>
+<span class="k">if</span> <span class="n">path</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="p">:</span>
+<span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="n">path</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">django.core.handlers.wsgi</span> <span class="kn">import</span> <span class="n">WSGIHandler</span>
+<span class="kn">from</span> <span class="nn">bae.core.wsgi</span> <span class="kn">import</span> <span class="n">WSGIApplication</span>
+<span class="n">application</span> <span class="o">=</span> <span class="n">WSGIApplication</span><span class="p">(</span><span class="n">WSGIHandler</span><span class="p">())</span>
+<span class="n">app</span><span class="o">.</span><span class="n">conf</span><span class="p">:</span>
+<span class="n">handlers</span><span class="p">:</span>
+<span class="o">-</span> <span class="n">url</span> <span class="p">:</span> <span class="o">/</span><span class="n">static</span><span class="o">/</span><span class="p">(</span><span class="o">.*</span><span class="p">)</span>
+  <span class="n">script</span> <span class="p">:</span> <span class="o">/</span><span class="n">static</span><span class="o">/</span><span class="err">$</span><span class="mi">1</span>
+<span class="o">-</span> <span class="n">url</span> <span class="p">:</span> <span class="o">/.*</span>
+  <span class="n">script</span><span class="p">:</span> <span class="n">index</span><span class="o">.</span><span class="n">py</span>  
+<span class="o">-</span> <span class="n">expire</span> <span class="p">:</span> <span class="o">.</span><span class="n">jpg</span> <span class="n">modify</span> <span class="mi">10</span> <span class="n">years</span>
+<span class="o">-</span> <span class="n">expire</span> <span class="p">:</span> <span class="o">.</span><span class="n">swf</span> <span class="n">modify</span> <span class="mi">10</span> <span class="n">years</span>
+<span class="o">-</span> <span class="n">expire</span> <span class="p">:</span> <span class="o">.</span><span class="n">png</span> <span class="n">modify</span> <span class="mi">10</span> <span class="n">years</span>
+<span class="o">-</span> <span class="n">expire</span> <span class="p">:</span> <span class="o">.</span><span class="n">gif</span> <span class="n">modify</span> <span class="mi">10</span> <span class="n">years</span>
+<span class="o">-</span> <span class="n">expire</span> <span class="p">:</span> <span class="o">.</span><span class="n">JPG</span> <span class="n">modify</span> <span class="mi">10</span> <span class="n">years</span>
+<span class="o">-</span> <span class="n">expire</span> <span class="p">:</span> <span class="o">.</span><span class="n">ico</span> <span class="n">modify</span> <span class="mi">10</span> <span class="n">years</span>
+</pre></div>
+
+
+<blockquote>
+<p>settings.py:  </p>
+</blockquote>
+<div class="highlight"><pre><span></span><span class="c1"># -*- coding:utf-8 -*-</span>
+<span class="c1"># Django settings for yukiyam project.</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">os.path</span>
+<span class="kn">from</span> <span class="nn">bae.core</span> <span class="kn">import</span> <span class="n">const</span> <span class="c1">#导入bae的const</span>
+<span class="n">DEBUG</span> <span class="o">=</span> <span class="bp">True</span>
+<span class="n">TEMPLATE_DEBUG</span> <span class="o">=</span> <span class="n">DEBUG</span>
+<span class="n">base_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">__file__</span><span class="p">)</span>
+<span class="n">HERE</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">__file__</span><span class="p">))</span> <span class="c1">#加这句</span>
+<span class="n">HERE</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">HERE</span><span class="p">,</span><span class="s1">&#39;../&#39;</span><span class="p">)</span> <span class="c1">#加这句</span>
+<span class="n">ADMINS</span> <span class="o">=</span> <span class="p">(</span>
+<span class="c1"># (&#39;Your Name&#39;, &#39;your_email@example.com&#39;),</span>
+<span class="p">)</span>
+<span class="n">MANAGERS</span> <span class="o">=</span> <span class="n">ADMINS</span>
+<span class="n">DATABASES</span> <span class="o">=</span> <span class="p">{</span>
+<span class="s1">&#39;default&#39;</span><span class="p">:</span> <span class="p">{</span>
+<span class="s1">&#39;ENGINE&#39;</span><span class="p">:</span><span class="s1">&#39;django.db.backends.mysql&#39;</span><span class="p">,</span> <span class="c1">#bae目前只支持mysql</span>
+<span class="s1">&#39;NAME&#39;</span><span class="p">:</span> <span class="s1">&#39;数据库名&#39;</span><span class="p">,</span> <span class="c1">#在bae中使用mysql后你会获取到数据库名</span>
+<span class="s1">&#39;USER&#39;</span><span class="p">:</span> <span class="n">const</span><span class="o">.</span><span class="n">MYSQL_USER</span><span class="p">,</span> <span class="c1"># 使用const获取bae上mysql数据库用户名</span>
+<span class="s1">&#39;PASSWORD&#39;</span><span class="p">:</span> <span class="n">const</span><span class="o">.</span><span class="n">MYSQL_PASS</span><span class="p">,</span> <span class="c1"># 获取密码</span>
+<span class="s1">&#39;HOST&#39;</span><span class="p">:</span> <span class="n">const</span><span class="o">.</span><span class="n">MYSQL_HOST</span><span class="p">,</span> <span class="c1"># 获取host</span>
+<span class="s1">&#39;PORT&#39;</span><span class="p">:</span> <span class="n">const</span><span class="o">.</span><span class="n">MYSQL_PORT</span><span class="p">,</span> <span class="c1"># 获取端口</span>
+<span class="p">}</span>
+<span class="p">}</span>
+<span class="n">CACHES</span> <span class="o">=</span> <span class="p">{</span>
+<span class="s1">&#39;default&#39;</span><span class="p">:{</span>
+<span class="s1">&#39;BACKEND&#39;</span><span class="p">:</span><span class="s1">&#39;django.core.cache.backends.memcached.MemcachedCache&#39;</span><span class="p">,</span>
+<span class="s1">&#39;LOCATION&#39;</span><span class="p">:</span><span class="n">const</span><span class="o">.</span><span class="n">CACHE_ADDR</span><span class="p">,</span>
+<span class="s1">&#39;TIMEOUT&#39;</span><span class="p">:</span><span class="mi">60</span><span class="p">,</span>
+<span class="p">}</span>
+<span class="p">}</span>
+<span class="n">SESSION_ENGINE</span> <span class="o">=</span> <span class="s1">&#39;django.contrib.sessions.backends.cache&#39;</span>
+<span class="c1"># Local time zone for this installation. Choices can be found here:</span>
+<span class="c1"># http://en.wikipedia.org/wiki/List_of_tz_zones_by_name</span>
+<span class="c1"># although not all choices may be available on all operating systems.</span>
+<span class="c1"># In a Windows environment this must be set to your system time zone.</span>
+<span class="n">TIME_ZONE</span> <span class="o">=</span> <span class="s1">&#39;Asia/Shanghai&#39;</span>
+<span class="c1"># Language code for this installation. All choices can be found here:</span>
+<span class="c1"># http://www.i18nguy.com/unicode/language-identifiers.html</span>
+<span class="n">LANGUAGE_CODE</span> <span class="o">=</span> <span class="s1">&#39;zh-cn&#39;</span>
+<span class="n">LANGUAGE</span> <span class="o">=</span> <span class="p">(</span>
+<span class="p">(</span><span class="s1">&#39;zh-cn&#39;</span><span class="p">,</span> <span class="s1">&#39;简体中文&#39;</span><span class="p">),</span>
+<span class="p">(</span><span class="s1">&#39;en-us&#39;</span><span class="p">,</span> <span class="s1">&#39;English&#39;</span><span class="p">),</span>
+<span class="p">)</span>
+<span class="n">SITE_ID</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="c1"># If you set this to False, Django will make some optimizations so as not</span>
+<span class="c1"># to load the internationalization machinery.</span>
+<span class="n">USE_I18N</span> <span class="o">=</span> <span class="bp">True</span>
+<span class="c1"># If you set this to False, Django will not format dates, numbers and</span>
+<span class="c1"># calendars according to the current locale.</span>
+<span class="n">USE_L10N</span> <span class="o">=</span> <span class="bp">True</span>
+<span class="c1"># If you set this to False, Django will not use timezone-aware datetimes.</span>
+<span class="n">USE_TZ</span> <span class="o">=</span> <span class="bp">True</span>
+<span class="c1"># Absolute filesystem path to the directory that will hold user-uploaded files.</span>
+<span class="c1"># Example: &quot;/home/media/media.lawrence.com/media/&quot;</span>
+<span class="n">MEDIA_ROOT</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+<span class="c1"># URL that handles the media served from MEDIA_ROOT. Make sure to use a</span>
+<span class="c1"># trailing slash.</span>
+<span class="c1"># Examples: &quot;http://media.lawrence.com/media/&quot;, &quot;http://example.com/media/&quot;</span>
+<span class="n">MEDIA_URL</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+<span class="c1"># Absolute path to the directory static files should be collected to.</span>
+<span class="c1"># Don&#39;t put anything in this directory yourself; store your static files</span>
+<span class="c1"># in apps&#39; &quot;static/&quot; subdirectories and in STATICFILES_DIRS.</span>
+<span class="c1"># Example: &quot;/home/media/media.lawrence.com/static/&quot;</span>
+<span class="n">STATIC_ROOT</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+<span class="c1"># URL prefix for static files.</span>
+<span class="c1"># Example: &quot;http://media.lawrence.com/static/&quot;</span>
+<span class="n">STATIC_URL</span> <span class="o">=</span> <span class="s1">&#39;/static/&#39;</span>
+<span class="c1"># Additional locations of static files</span>
+<span class="n">STATICFILES_DIRS</span> <span class="o">=</span> <span class="p">(</span>
+<span class="c1"># Put strings here, like &quot;/home/html/static&quot; or &quot;C:/www/django/static&quot;.</span>
+<span class="c1"># Always use forward slashes, even on Windows.</span>
+<span class="c1"># Don&#39;t forget to use absolute paths, not relative paths.</span>
+<span class="p">)</span>
+<span class="n">STATICFILES_FINDERS</span> <span class="o">=</span> <span class="p">(</span>
+<span class="s1">&#39;django.contrib.staticfiles.finders.FileSystemFinder&#39;</span><span class="p">,</span>
+<span class="s1">&#39;django.contrib.staticfiles.finders.AppDirectoriesFinder&#39;</span><span class="p">,</span>
+<span class="c1"># &#39;django.contrib.staticfiles.finders.DefaultStorageFinder&#39;,</span>
+<span class="p">)</span>
+<span class="n">LOGIN_URL</span> <span class="o">=</span> <span class="s1">&#39;/login/&#39;</span>
+<span class="c1"># Make this unique, and don&#39;t share it with anybody.</span>
+<span class="n">SECRET_KEY</span> <span class="o">=</span> <span class="s1">&#39;6r!w4*+w@4zj()tdcr1eyifx4^md=a&#39;</span>
+<span class="n">TEMPLATE_LOADERS</span> <span class="o">=</span> <span class="p">(</span>
+<span class="s1">&#39;django.template.loaders.filesystem.Loader&#39;</span><span class="p">,</span>
+<span class="s1">&#39;django.template.loaders.app_directories.Loader&#39;</span><span class="p">,</span>
+<span class="c1"># &#39;django.template.loaders.eggs.Loader&#39;,</span>
+<span class="p">)</span>
+<span class="n">MIDDLEWARE_CLASSES</span> <span class="o">=</span> <span class="p">(</span>
+<span class="s1">&#39;django.middleware.common.CommonMiddleware&#39;</span><span class="p">,</span>
+<span class="s1">&#39;django.contrib.sessions.middleware.SessionMiddleware&#39;</span><span class="p">,</span>
+<span class="s1">&#39;django.middleware.csrf.CsrfViewMiddleware&#39;</span><span class="p">,</span>
+<span class="s1">&#39;django.contrib.auth.middleware.AuthenticationMiddleware&#39;</span><span class="p">,</span>
+<span class="s1">&#39;django.contrib.messages.middleware.MessageMiddleware&#39;</span><span class="p">,</span>
+<span class="c1"># Uncomment the next line for simple clickjacking protection:</span>
+<span class="c1"># &#39;django.middleware.clickjacking.XFrameOptionsMiddleware&#39;,</span>
+<span class="p">)</span>
+<span class="n">ROOT_URLCONF</span> <span class="o">=</span> <span class="s1">&#39;yukiyam.urls&#39;</span>
+<span class="n">WSGI_APPLICATION</span> <span class="o">=</span> <span class="s1">&#39;yukiyam.wsgi.application&#39;</span>
+<span class="n">TEMPLATE_DIRS</span> <span class="o">=</span> <span class="p">(</span>
+<span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">HERE</span><span class="p">,</span> <span class="s1">&#39;templates&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\\</span><span class="s1">&#39;</span><span class="p">,</span> <span class="s1">&#39;/&#39;</span><span class="p">)</span> <span class="c1">#这句代码非常重要，否则无法找到 settings文件</span>
+<span class="p">)</span>
+<span class="n">INSTALLED_APPS</span> <span class="o">=</span> <span class="p">(</span>
+<span class="s1">&#39;django.contrib.auth&#39;</span><span class="p">,</span>
+<span class="s1">&#39;django.contrib.contenttypes&#39;</span><span class="p">,</span>
+<span class="s1">&#39;django.contrib.sessions&#39;</span><span class="p">,</span>
+<span class="s1">&#39;django.contrib.sites&#39;</span><span class="p">,</span>
+<span class="s1">&#39;django.contrib.messages&#39;</span><span class="p">,</span>
+<span class="s1">&#39;django.contrib.staticfiles&#39;</span><span class="p">,</span>  
+<span class="c1"># Uncomment the next line to enable the admin:</span>
+<span class="c1"># &#39;django.contrib.admin&#39;,</span>
+<span class="c1"># Uncomment the next line to enable admin documentation:</span>
+<span class="c1"># &#39;django.contrib.admindocs&#39;,</span>
+<span class="s1">&#39;yukiyam&#39;</span><span class="p">,</span>
+<span class="s1">&#39;blog&#39;</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">PASSWORD_HASHERS</span> <span class="o">=</span> <span class="p">(</span>
+<span class="s1">&#39;django.contrib.auth.hashers.PBKDF2PasswordHasher&#39;</span><span class="p">,</span>
+<span class="s1">&#39;django.contrib.auth.hashers.PBKDF2SHA1PasswordHasher&#39;</span><span class="p">,</span>
+<span class="s1">&#39;django.contrib.auth.hashers.BCryptPasswordHasher&#39;</span><span class="p">,</span>
+<span class="s1">&#39;django.contrib.auth.hashers.SHA1PasswordHasher&#39;</span><span class="p">,</span>
+<span class="s1">&#39;django.contrib.auth.hashers.MD5PasswordHasher&#39;</span><span class="p">,</span>
+<span class="s1">&#39;django.contrib.auth.hashers.CryptPasswordHasher&#39;</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">LOGGING</span> <span class="o">=</span> <span class="p">{</span>
+<span class="s1">&#39;version&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+<span class="s1">&#39;disable_existing_loggers&#39;</span><span class="p">:</span> <span class="bp">False</span><span class="p">,</span>
+<span class="s1">&#39;filters&#39;</span><span class="p">:</span> <span class="p">{</span>
+<span class="s1">&#39;require_debug_false&#39;</span><span class="p">:</span> <span class="p">{</span>
+<span class="s1">&#39;()&#39;</span><span class="p">:</span> <span class="s1">&#39;django.utils.log.RequireDebugFalse&#39;</span>
+<span class="p">}</span>
+<span class="p">},</span>
+<span class="s1">&#39;handlers&#39;</span><span class="p">:</span> <span class="p">{</span>
+<span class="s1">&#39;mail_admins&#39;</span><span class="p">:</span> <span class="p">{</span>
+<span class="s1">&#39;level&#39;</span><span class="p">:</span> <span class="s1">&#39;ERROR&#39;</span><span class="p">,</span>
+<span class="s1">&#39;filters&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;require_debug_false&#39;</span><span class="p">],</span>
+<span class="s1">&#39;class&#39;</span><span class="p">:</span> <span class="s1">&#39;django.utils.log.AdminEmailHandler&#39;</span>
+<span class="p">}</span>
+<span class="p">},</span>
+<span class="s1">&#39;loggers&#39;</span><span class="p">:</span> <span class="p">{</span>
+<span class="s1">&#39;django.request&#39;</span><span class="p">:</span> <span class="p">{</span>
+<span class="s1">&#39;handlers&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;mail_admins&#39;</span><span class="p">],</span>
+<span class="s1">&#39;level&#39;</span><span class="p">:</span> <span class="s1">&#39;ERROR&#39;</span><span class="p">,</span>
+<span class="s1">&#39;propagate&#39;</span><span class="p">:</span> <span class="bp">True</span><span class="p">,</span>
+<span class="p">},</span>
+<span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+
+
+<p>配置完如上这些之后，使用svn将代码上传到bae上，就可以通过预览查看自己的页面啦。注意，一定要上传正确。由于我受git影响，初次没有使用svn add *，导致没有将所有的代码上传，白白折腾了很久。通过这次部署，我意识到，基本的知识是很重要的，此外，认真的阅读文档也是必要的一步，磨刀不误砍柴工。  </p>
+<p>好了，以上就是简单的部署过程。good luck。</p>
+            <a href="#" class="go-top">Go Top</a>
+    <div class="comments">
+        <div id="disqus_thread"></div>
+        <script type="text/javascript">
+            /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+            var disqus_shortname = "everlose"; // required: replace example with your forum shortname
+
+            /* * * DON'T EDIT BELOW THIS LINE * * */
+            (function() {
+                var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+                dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+                (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+            })();
+        </script>
+        <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+        <a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+    </div>
+<footer class="footer">
+    <p>&copy; 木头lbj &ndash;
+        Built with <a href="https://github.com/PurePelicanTheme/pure-single">Pure Theme</a>
+        for <a href="http://blog.getpelican.com/">Pelican</a>
+    </p>
+</footer>        </div>
+    </div>
+    </div>
+    <script>
+        var $top = $('.go-top');
+
+        // Show or hide the sticky footer button
+        $(window).scroll(function() {
+            if ($(this).scrollTop() > 200) {
+                $top.fadeIn(200);
+            } else {
+                $top.fadeOut(200);
+            }
+        });
+
+        // Animate the scroll to top
+        $top.click(function(event) {
+            event.preventDefault();
+            $('html, body').animate({scrollTop: 0}, 300);
+        })
+
+        // Makes sure that the href="#" attached to the <a> elements
+        // don't scroll you back up the page.
+        $('body').on('click', 'a[href="#"]', function(event) {
+            event.preventDefault();
+        });
+    </script>
+
+</body>
+</html>

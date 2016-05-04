@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="EverLose, EverLose">
+
+
+        <title>Ubuntu MySQL Django环境配置备忘 // EverLose // EverLose</title>
+
+    <link href="./theme/images/icons/favicon.ico" rel="icon">
+
+    <link rel="stylesheet" href="http://yui.yahooapis.com/pure/0.5.0/pure-min.css">
+    <link rel="stylesheet" href="./theme/css/font-awesome.min.css">
+    <link rel="stylesheet" href="./theme/css/pure.css">
+    <!-- Custom style -->
+    <link rel="stylesheet" type="text/css" href="./theme/css/style.css">
+    <link rel="stylesheet" href="./theme/css/pygments.css">
+
+    <script src="./theme/js/jquery-2.1.1.min.js"></script>
+    <script src="./theme/js/jquery.fitvids.js"></script>
+    <script type="text/javascript">
+        $(document).ready(function(){
+            $(".content").fitVids();
+        });
+    </script>
+</head>
+
+<body>
+    <div class="pure-g-r" id="layout">
+        <div class="sidebar pure-u">
+            <div class="cover-img" style="background-image: url('http://everlose.qiniudn.com/sanqiao.jpg')">
+                <div class="cover-body">
+                    <header class="header">
+                        <hgroup>
+                            <h1 class="brand-main"><a href=".">EverLose</a></h1>
+                            <p class="tagline">EverLose</p>
+                                <p class="social">
+                                    <a href="http://weibo.com/mutoulbj">
+                                        <i class="fa fa-weibo fa-3x"></i>
+                                    </a>
+                                    <a href="http://github.com/mutoulbj">
+                                        <i class="fa fa-github fa-3x"></i>
+                                    </a>
+                                    <a href="http://twitter.com/mutoulbj">
+                                        <i class="fa fa-twitter fa-3x"></i>
+                                    </a>
+                                </p>
+                        </hgroup>
+                    </header>
+                </div>
+            </div>
+        </div>
+    <div class="pure-u">
+        <div class="content">
+            <section class="post">
+                <header class="post-header">
+                    <h1>Ubuntu MySQL Django环境配置备忘</h1>
+                        <p class="post-meta">
+                            <i class="fa fa-book"></i>                                 <a class="post-category" href="./tag/django.html">django</a>
+                                <a class="post-category" href="./tag/ubuntu.html">ubuntu</a>
+                                <a class="post-category" href="./tag/mysql.html">mysql</a>
+                        </p>
+                </header>
+            </section>
+            <h2>设置virtualenv</h2>
+<p>安装virtualenv  </p>
+<div class="highlight"><pre><span></span>sudo apt-get install virtualenv    
+</pre></div>
+
+
+<p>安装virtualenvwrapper  </p>
+<div class="highlight"><pre><span></span>sudo pip install virtualenvwrapper    
+</pre></div>
+
+
+<p>开机启动virtualenvwrapper，在<code>.bashrc</code>或<code>.profile</code>等此类文件中写入如下代码   </p>
+<div class="highlight"><pre><span></span><span class="nb">export</span> <span class="nv">WORKON_HOME</span><span class="o">=</span>$HOME/.virtualenvs        
+<span class="nb">export</span> <span class="nv">PROJECT_HOME</span><span class="o">=</span>$HOME/Devel      
+<span class="nb">source</span> /usr/local/bin/virtualenvwrapper.sh    
+</pre></div>
+
+
+<p>也可以每次使用之前运行<code>source /usr/local/bin/virtualenvwrapper.sh</code>  </p>
+<h2>MySQL安装与简单设置</h2>
+<p>安装MySQL  </p>
+<div class="highlight"><pre><span></span>sudo apt-get install mysql-server  
+</pre></div>
+
+
+<p>创建数据库  </p>
+<div class="highlight"><pre><span></span>mysql -u root -p  
+// 输入密码      
+create database database_name<span class="p">;</span>    
+</pre></div>
+
+
+<p>安装Django  </p>
+<div class="highlight"><pre><span></span>pip install django  
+</pre></div>
+
+
+<h2>相关依赖</h2>
+<p>python-mysqld  </p>
+<div class="highlight"><pre><span></span>pip install python-mysqld 
+</pre></div>
+
+
+<p>libmysqld-dev    </p>
+<div class="highlight"><pre><span></span>sudo apt-get install libmysqld-dev  
+</pre></div>
+            <a href="#" class="go-top">Go Top</a>
+    <div class="comments">
+        <div id="disqus_thread"></div>
+        <script type="text/javascript">
+            /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+            var disqus_shortname = "everlose"; // required: replace example with your forum shortname
+
+            /* * * DON'T EDIT BELOW THIS LINE * * */
+            (function() {
+                var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+                dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+                (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+            })();
+        </script>
+        <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+        <a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+    </div>
+<footer class="footer">
+    <p>&copy; 木头lbj &ndash;
+        Built with <a href="https://github.com/PurePelicanTheme/pure-single">Pure Theme</a>
+        for <a href="http://blog.getpelican.com/">Pelican</a>
+    </p>
+</footer>        </div>
+    </div>
+    </div>
+    <script>
+        var $top = $('.go-top');
+
+        // Show or hide the sticky footer button
+        $(window).scroll(function() {
+            if ($(this).scrollTop() > 200) {
+                $top.fadeIn(200);
+            } else {
+                $top.fadeOut(200);
+            }
+        });
+
+        // Animate the scroll to top
+        $top.click(function(event) {
+            event.preventDefault();
+            $('html, body').animate({scrollTop: 0}, 300);
+        })
+
+        // Makes sure that the href="#" attached to the <a> elements
+        // don't scroll you back up the page.
+        $('body').on('click', 'a[href="#"]', function(event) {
+            event.preventDefault();
+        });
+    </script>
+
+</body>
+</html>

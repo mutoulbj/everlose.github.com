@@ -1,0 +1,207 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="EverLose, EverLose">
+
+
+        <title>CentOS下mysql的安装与配置 // EverLose // EverLose</title>
+
+    <link href="./theme/images/icons/favicon.ico" rel="icon">
+
+    <link rel="stylesheet" href="http://yui.yahooapis.com/pure/0.5.0/pure-min.css">
+    <link rel="stylesheet" href="./theme/css/font-awesome.min.css">
+    <link rel="stylesheet" href="./theme/css/pure.css">
+    <!-- Custom style -->
+    <link rel="stylesheet" type="text/css" href="./theme/css/style.css">
+    <link rel="stylesheet" href="./theme/css/pygments.css">
+
+    <script src="./theme/js/jquery-2.1.1.min.js"></script>
+    <script src="./theme/js/jquery.fitvids.js"></script>
+    <script type="text/javascript">
+        $(document).ready(function(){
+            $(".content").fitVids();
+        });
+    </script>
+</head>
+
+<body>
+    <div class="pure-g-r" id="layout">
+        <div class="sidebar pure-u">
+            <div class="cover-img" style="background-image: url('http://everlose.qiniudn.com/sanqiao.jpg')">
+                <div class="cover-body">
+                    <header class="header">
+                        <hgroup>
+                            <h1 class="brand-main"><a href=".">EverLose</a></h1>
+                            <p class="tagline">EverLose</p>
+                                <p class="social">
+                                    <a href="http://weibo.com/mutoulbj">
+                                        <i class="fa fa-weibo fa-3x"></i>
+                                    </a>
+                                    <a href="http://github.com/mutoulbj">
+                                        <i class="fa fa-github fa-3x"></i>
+                                    </a>
+                                    <a href="http://twitter.com/mutoulbj">
+                                        <i class="fa fa-twitter fa-3x"></i>
+                                    </a>
+                                </p>
+                        </hgroup>
+                    </header>
+                </div>
+            </div>
+        </div>
+    <div class="pure-u">
+        <div class="content">
+            <section class="post">
+                <header class="post-header">
+                    <h1>CentOS下mysql的安装与配置</h1>
+                        <p class="post-meta">
+                            <i class="fa fa-book"></i>                                 <a class="post-category" href="./tag/mysql.html">mysql</a>
+                        </p>
+                </header>
+            </section>
+            <p>今天在centOS6.2下使用yum install mysql安装了mysql后一直报错，无法链接数据库，之后搜索了很多国内的文章，千篇一律，而且没有解决我的问题。折腾了好久，最终还是使用英文搜索，找到了centOS的官方帮助文档，按照文档走一遍，很快解决了问题，并且学到了不少知识。这里记下，便于日后学习。
+PS：还是直接看英文文档靠谱啊！</p>
+<p>适用centos版本：
+centos 5.x
+centos 6.x</p>
+<p>需要用root权限进行操作，并且yum和rpm要求已经安装。</p>
+<blockquote>
+<p>步骤：  </p>
+<ol>
+<li>安装mysql mysql-server  </li>
+</ol>
+</blockquote>
+<div class="highlight"><pre><span></span>#yum install mysql mysql-server
+</pre></div>
+
+
+<p>注：直接#yum install mysql-server的话，mysql也会被安装，保险起见还是按照原命令执行  </p>
+<ol>
+<li>启动mysql server的daemon(mysqld)  </li>
+</ol>
+<div class="highlight"><pre><span></span>#chkconfig --level 2345 mysqld on;service mysqld start
+注：这其实是两个命令，第一个检查配置，后一个启动mysqld  
+</pre></div>
+
+
+<ol>
+<li>以root用户登录mysql  </li>
+</ol>
+<div class="highlight"><pre><span></span>#mysql -u root  
+</pre></div>
+
+
+<p>默认没有密码  </p>
+<ol>
+<li>删除所有所有不是root的用户  </li>
+</ol>
+<div class="highlight"><pre><span></span>mysql&gt; delete from mysql.user where not (host=&quot;localhost&quot; and user=&quot;root&quot;);
+mysql&gt; flush privileges;  
+</pre></div>
+
+
+<ol>
+<li>安装好后默认root是没有密码的，修改root的密码  </li>
+</ol>
+<div class="highlight"><pre><span></span>mysql&gt; set password for &#39;root&#39;@&#39;localhost&#39; = password(&#39;yourpassword&#39;);
+mysql&gt; flush privileges;  
+</pre></div>
+
+
+<ol>
+<li>修改root的名称，让他难以被猜到来提高安全性，就是说，给root换一个名称  </li>
+</ol>
+<div class="highlight"><pre><span></span>mysql&gt; update mysql.user set user=&quot;myadmin&quot; where user=&quot;root&quot;;
+mysql&gt; flush privileges;  
+注：这里的myadmin是要给root换的名称，自己指定  
+</pre></div>
+
+
+<ol>
+<li>移除匿名用户使用数据库的记录  </li>
+</ol>
+<div class="highlight"><pre><span></span>mysql&gt; delete from mysql.user where user=&#39;&#39;;
+mysql&gt; flush privileges;  
+</pre></div>
+
+
+<ol>
+<li>添加新的管理员用户  </li>
+</ol>
+<div class="highlight"><pre><span></span>mysql&gt; grant all privileges on *.* to &#39;username&#39;@&#39;localhost&#39; indentified by &#39;password&#39; with grant option;
+mysql&gt; flush privileges;  
+</pre></div>
+
+
+<ol>
+<li>给特定数据库添加用户，以‘bugzilla’数据库名为例  </li>
+</ol>
+<div class="highlight"><pre><span></span>mysql&gt; grant all privileges on bugzilla.* to &#39;username&#39;@&#39;localhost&#39; identified by &#39;password&#39;;
+mysql&gt; flush privileges;
+</pre></div>
+
+
+<ol>
+<li>添加数据库</li>
+</ol>
+<div class="highlight"><pre><span></span>mysql&gt; create datebase datebasename;
+mysql&gt; flush privileges;  
+</pre></div>
+
+
+<p>以上是常用的几项，还有一些可以查看centos关于mysql的<a href="http://centoshelp.org/servers/database/installing-configuring-mysql-server/">帮助文档</a>。   </p>
+<p>http://centoshelp.org/servers/database/installing-configuring-mysql-server/</p>
+            <a href="#" class="go-top">Go Top</a>
+    <div class="comments">
+        <div id="disqus_thread"></div>
+        <script type="text/javascript">
+            /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+            var disqus_shortname = "everlose"; // required: replace example with your forum shortname
+
+            /* * * DON'T EDIT BELOW THIS LINE * * */
+            (function() {
+                var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+                dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+                (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+            })();
+        </script>
+        <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+        <a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+    </div>
+<footer class="footer">
+    <p>&copy; 木头lbj &ndash;
+        Built with <a href="https://github.com/PurePelicanTheme/pure-single">Pure Theme</a>
+        for <a href="http://blog.getpelican.com/">Pelican</a>
+    </p>
+</footer>        </div>
+    </div>
+    </div>
+    <script>
+        var $top = $('.go-top');
+
+        // Show or hide the sticky footer button
+        $(window).scroll(function() {
+            if ($(this).scrollTop() > 200) {
+                $top.fadeIn(200);
+            } else {
+                $top.fadeOut(200);
+            }
+        });
+
+        // Animate the scroll to top
+        $top.click(function(event) {
+            event.preventDefault();
+            $('html, body').animate({scrollTop: 0}, 300);
+        })
+
+        // Makes sure that the href="#" attached to the <a> elements
+        // don't scroll you back up the page.
+        $('body').on('click', 'a[href="#"]', function(event) {
+            event.preventDefault();
+        });
+    </script>
+
+</body>
+</html>

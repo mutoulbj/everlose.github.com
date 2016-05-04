@@ -1,0 +1,349 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="EverLose, EverLose">
+
+
+        <title>正确开始一个Django 1.4项目 // EverLose // EverLose</title>
+
+    <link href="./theme/images/icons/favicon.ico" rel="icon">
+
+    <link rel="stylesheet" href="http://yui.yahooapis.com/pure/0.5.0/pure-min.css">
+    <link rel="stylesheet" href="./theme/css/font-awesome.min.css">
+    <link rel="stylesheet" href="./theme/css/pure.css">
+    <!-- Custom style -->
+    <link rel="stylesheet" type="text/css" href="./theme/css/style.css">
+    <link rel="stylesheet" href="./theme/css/pygments.css">
+
+    <script src="./theme/js/jquery-2.1.1.min.js"></script>
+    <script src="./theme/js/jquery.fitvids.js"></script>
+    <script type="text/javascript">
+        $(document).ready(function(){
+            $(".content").fitVids();
+        });
+    </script>
+</head>
+
+<body>
+    <div class="pure-g-r" id="layout">
+        <div class="sidebar pure-u">
+            <div class="cover-img" style="background-image: url('http://everlose.qiniudn.com/sanqiao.jpg')">
+                <div class="cover-body">
+                    <header class="header">
+                        <hgroup>
+                            <h1 class="brand-main"><a href=".">EverLose</a></h1>
+                            <p class="tagline">EverLose</p>
+                                <p class="social">
+                                    <a href="http://weibo.com/mutoulbj">
+                                        <i class="fa fa-weibo fa-3x"></i>
+                                    </a>
+                                    <a href="http://github.com/mutoulbj">
+                                        <i class="fa fa-github fa-3x"></i>
+                                    </a>
+                                    <a href="http://twitter.com/mutoulbj">
+                                        <i class="fa fa-twitter fa-3x"></i>
+                                    </a>
+                                </p>
+                        </hgroup>
+                    </header>
+                </div>
+            </div>
+        </div>
+    <div class="pure-u">
+        <div class="content">
+            <section class="post">
+                <header class="post-header">
+                    <h1>正确开始一个Django 1.4项目</h1>
+                        <p class="post-meta">
+                            <i class="fa fa-book"></i>                                 <a class="post-category" href="./tag/django.html">django</a>
+                        </p>
+                </header>
+            </section>
+            <h3>原文:<a href="http://www.jeffknupp.com/blog/2012/10/24/starting-a-django-14-project-the-right-way/">Start a Django 1.4 Project the Right Way</a></h3>
+<p>开始一个项目时是一个具有决定性作用的阶段。所做的每一个决定都会对项目产生长远的影响。虽然有很多关于如何开始一个基于Django框架项目的教程，但是很少有讨论怎么使用专业的、业内已经形成共识的最佳实践方法来使用Django，保证项目在开发过程中平衡的成长的。一些很少的计划可以让你未来的生活变得轻松。  </p>
+<p>当你读完这篇文章，你将会获得：<br />
+1. 一个功能完备的Django 1.4项目<br />
+2. 使用版本控制管理所有的文档(使用git或者Mercurial)<br />
+3. 自动的回退和单元测试(使用unittest library)<br />
+4. 一个安装了你项目的独立环境(使用virtualenv)<br />
+5. 自动的部署和测试(使用Fabric)<br />
+6. 自动的数据库迁移(使用South)<br />
+7. 一个均衡你网站的工作流  </p>
+<p>所有的这些(也许除了第一点)，在官方教程中都没有说明。<strong>他们应该有的</strong>。如果你正在想着开始一个新的，能够投入生产的Django 1.4项目，赶紧读下去吧。  </p>
+<h2>预备知识</h2>
+<p>假定你拥有Python的实战经验，同样，如果你之前拥有关于Django的一些使用经验将会非常有帮助，但是这不是必需的。你需要<a href="http://www.git-scm.com/">git</a>(注:有墙)或者<a href="http://mercurial.selenic.com/">Mercurial</a>用作版本控制。就是这些!  </p>
+<h2>准备开始安装</h2>
+<p>我假定你已经安装好了Python。如果你没有，可以先去<a href="http://www.python.org">python.org</a>，找到关于你所用系统的安装说明。我将会使用托管在<a href="https://www.linode.com">Linode</a>的一个64位的Ubuntu server。  </p>
+<p>那么，第一步是什么呢?安装Django，是吗？不完全是这样。如果直接在你当前site-packages内安装包的话，一旦在你的机器中有多个不是Django的基于Python的项目，你也许会陷入项目和安装的包之间的依赖问题。基于此，我们将会使用<a href="https://pypi.python.org/pypi/virtualenv">virtualenv</a>和它非常棒的扩展<a href="http://virtualenvwrapper.readthedocs.org/en/latest/">virtualenvwrapper</a>来管理我们的Django。这对于Django和Python用户是非常常见和值得推荐的方法。  </p>
+<p>如果你使用pip来安装包(我想不出任何你不用它的理由)，你只需非常简单的安装virtualenvwrapper，它会自动安装virtualenv。  </p>
+<div class="highlight"><pre><span></span>$ pip install virtualenvwrapper  
+</pre></div>
+
+
+<p>安装好之后，将下面几行代码添加进你shell的自启动文件(.zshrc,.bashrc,.profile,etc)。  </p>
+<div class="highlight"><pre><span></span><span class="nb">export</span> <span class="nv">WORKON_HOME</span><span class="o">=</span>$HOME/.virtualenvs  
+<span class="nb">export</span> <span class="nv">PROJECT_HOME</span><span class="o">=</span>$HOME/directory-yo-do-development-in  
+<span class="nb">source</span> /usr/local/bin/virtualenvwrapper .sh  
+</pre></div>
+
+
+<p>重新载入你的自启动文件(e.g. <code>source .zshrc</code>)，这样你就可以继续啦。  </p>
+<h2>创建一个新的环境</h2>
+<p>创建一个新的虚拟环境非常的简单。只需要输入命令:  </p>
+<div class="highlight"><pre><span></span>$ mkvirtualenv django_project  
+</pre></div>
+
+
+<p>这里"django_project"是任何一个你想要的给项目取的名字。  </p>
+<p>你将会发现马上发生了一些事情：你的shell的提示符前加上了"django_project"，pip也被自动安装上了。  </p>
+<p>这是virtualenvwrapper非常有帮助的地方：在它为你创建好虚拟环境之后能马上让你使用pip来安装包。命令行提示符前加上了"django_project"是提示你正在使用的是虚拟环境，而不是你系统的Python环境。想要退出虚拟环境非常简单，输入命令<code>deactivate</code>即可。当你想要重新回到项目的虚拟环境，只需要输入<code>workon django_project</code>。注意:在任何路径下都可以使用这些命令，这与virtualenv不一样。   </p>
+<h2>安装Django</h2>
+<p>"等一下，安装Django?我已经安装好Django了!"奇怪的是，你将不会用到你现在系统中已经安装好的。我们将会用一个使用virtualenv管理的Django，它不会将其他用户(或者你自己)在机器上其他地方所使用到的Django弄得混乱。安装一个虚拟环境下的Django，只需要输入命令:  </p>
+<div class="highlight"><pre><span></span>$ pip install Django  
+</pre></div>
+
+
+<p>这将在你的虚拟环境中安装一个最新版本的Django。你可以使用以下命令进行确认:  </p>
+<div class="highlight"><pre><span></span>$ which django-admin.py  
+</pre></div>
+
+
+<p>这将指向你的<code>$HOME/.virtualenvs/</code>目录。如果没有看到这样的结果，请确认你的命令提示符前有"django_project"。如果没有，使用<code>workon django_project</code>激活你的虚拟环境。  </p>
+<h2>项目设置</h2>
+<p>在实际开始项目之前，我们还需要讨论一些小事情。在过去的几个月，我跟很多Django新手都说过，这些新手有一个最大的不同之处就是不使用版本控制系统。许多新手没有接触过版本控制，其他的则是认为"这是个小项目"不需要版本控制。<strong>错</strong>.  </p>
+<p><strong>只有使用了版本控制系统才不会在未来付出沉重的代价。</strong>  </p>
+<p>以前，关于(D)VCS我只说过git。然而，这是个基于Python的项目，Mercurial也是一个非常有价值的选择。在网上他们都非常的流行，有着大量的资料。确认你已经安装了git或者Mercurial。他们基本都能通过你的包控制系统(package control system)安装。  </p>
+<p>如果你准备使用git,显然<a href="https://github.com/">GitHub</a>是你进行代码托管的选择。对于Mercurial，Atlassian的<a href="https://bitbucket.org/">Bitbucket</a>是一个好选择(它也支持git，所以两种情况你都可以使用它)。  </p>
+<h2>（source）控制你的环境</h2>
+<p>虽然到现在我们还没有做任何事情，我们知道我们想让一切都进行版本控制。我们有两类"东西"要提交：我们的代码(包括templates,etc)和像数据库管理，South迁移文件(后面详述)，requirements文件等文件。在过去的文章中，我推荐提交你实际的virtualenv环境，但是有一些很好的理由不去这么做，至少这不是必需的。使用requirements文件可以让你不需要保存所有的环境。  </p>
+<p>我们继续，现在开始创建我们的项目目录。使用新<code>django-admin.py</code>的<code>startproject</code>命令来创建项目。  </p>
+<div class="highlight"><pre><span></span>$ django-damin.py startproject django_project  
+</pre></div>
+
+
+<p>我们将会看到创建了一个<em>django_project</em>目录，在<em>django_project</em>目录里，有另一个包含了<em>settings.py</em>,<em>urls,py</em>和<em>wsgi.py</em>的<em>django_project</em>目录，还有一个<em>manage.py</em>文件。  </p>
+<h3>插曲：Project vs. Apps</h3>
+<p>你也许想知道为什么除了已经存在的<code>startapp</code>命令之外添加了新的<code>startproject</code>命令。答案就在于Django的"projects"和"apps"的不同，在Django 1.4中有描述。简单的说，"project"是一个完整的网站或者应用。"app"是一个小的，(最好是)独立的Django应用，它可以用在任何Django项目中。比如你要创建一个叫做"Super Blogger"的博客应用，那么"Super Blogger"就是你的Django project。如果"Super Blogger"支持读者进行投票，那么"polls"就是"Super Blogger"使用的一个Django app。主要在于你的"polls"这个"app"可以被其他需要投票功能的Django项目进行重用，而不是只能在"Super Blogger"中使用。一个project是使用各自特有的逻辑将apps组合起来，而app可被用于多个project。  </p>
+<p>如果你的"Super Blogger"中有很多特殊的逻辑和信息在"polls"这个app中,避免这个有很多好处。基于<strong>松耦合</strong>法则，编写独立完整的app能够避免你项目中设计上的决定和bugs直接影响你的app。这也意味着你可以将一些app的开发给其他的开发者去做而不需要他们进入或者修改你的主项目。  </p>
+<p>像很多软件工程中的法则一样，这只需要多做一点点却能在以后带来很大的好处。  </p>
+<h3>设置repos</h3>
+<p>由于现在在项目中已经有了一些代码(事实上只有一些脚本和空的配置文件)，现在是初始化我们的repositors的好时机。下面是使用git和Mercurial的步骤。  </p>
+<p><strong>git</strong>  </p>
+<div class="highlight"><pre><span></span>$ git init  
+</pre></div>
+
+
+<p>这创建了一个git版本库在当前的目录。现在让所有文件保存进git用于提交。  </p>
+<div class="highlight"><pre><span></span>$ git add django_project  
+</pre></div>
+
+
+<p>现在将他们提交进新的版本库:  </p>
+<div class="highlight"><pre><span></span>$ git commit -m <span class="s1">&#39;Initial commit of django_project&#39;</span>  
+</pre></div>
+
+
+<p><strong>Mercurial</strong>  </p>
+<div class="highlight"><pre><span></span>$ hg init  
+</pre></div>
+
+
+<p>这创建了一个Mercurial版本库在当前目录。现在将所有文件保存进Mercurial用于提交。  </p>
+<div class="highlight"><pre><span></span>$ hg add django_project  
+</pre></div>
+
+
+<p>现在将他们提交进新的代码库：  </p>
+<div class="highlight"><pre><span></span>$ hg commit -m <span class="s1">&#39;Initial commit of django_project&#39;</span>  
+</pre></div>
+
+
+<p>如果你准备使用GitHub或者Bitbucket的服务，现在可以push他们了。  </p>
+<h2>使用South用于数据库迁移</h2>
+<p>一个Django中最让人蛋疼的事情就是models改动之后怎么同步的数据库了。在<a href="http://south.aeracode.org/">South</a>的帮助下，你只需要创建一个独立的应用而不需要任何关于数据库的特殊代码，models的变动就能被监测到并且使用South创建的<em>migration file</em>可以自动同步到数据库。它能让你同步新的数据结构变动，也能<strong>回退</strong>来撤销一个或者一系列改动。它让你的变得如此轻松，很奇怪为什么它没有被Django收录(有一些传言说Django中将会包含一些数据库迁移的工具，但到目前还没有)。  </p>
+<p>仍然是在我们的虚拟环境中，安装South:  </p>
+<div class="highlight"><pre><span></span>$ pip install south  
+</pre></div>
+
+
+<p>启用South需要将它添加进<code>settings.py</code>的INSTALLED_APPS中。现在添加它，同时设置好项目的数据库，然后运行<code>python manage.py syncdb</code>。你会被提示创建一个超级用户的用户名和密码。更重要的是，South已经设置好了它需要的数据表。  </p>
+<p>你也许注意到了刚才我们只是运行了<code>syncdb</code>而没有添加任何这这个项目的app。我们先做这个是因为South需要在最开始就被安装，我们所有apps的数据库迁移将会使用South来操作，包括数据的初始化。  </p>
+<p>由于我们刚做了相当大的变化，现在也是一个提交代码的时候。你应该养成频繁提交代码的习惯，因为你提交的越频繁，当出错的时候你选择回退点的时候会更游刃有余。  </p>
+<p>在提交的时候，让我们看看都发生了哪些改变。  </p>
+<p><strong>(git)</strong>  </p>
+<div class="highlight"><pre><span></span>$ git status    
+<span class="c1"># On branch master  </span>
+<span class="c1"># Changes not staged for commit:  </span>
+<span class="c1">#   (use &quot;git add &lt;file&gt;...&quot; to update what will be committed)  </span>
+<span class="c1">#   (use &quot;git checkout -- &lt;file&gt;...&quot; to discard changes in working directory)  </span>
+<span class="c1">#  </span>
+<span class="c1">#       modified:   django_project/settings.py  </span>
+<span class="c1">#  </span>
+<span class="c1"># Untracked files:  </span>
+<span class="c1">#   (use &quot;git add &lt;file&gt;...&quot; to include in what will be committed)  </span>
+<span class="c1">#  </span>
+<span class="c1">#       django_project/.settings.py.swp  </span>
+<span class="c1">#       django_project/__init__.pyc  </span>
+<span class="c1">#       django_project/settings.pyc  </span>
+</pre></div>
+
+
+<p><strong>(Mercurial)</strong>  </p>
+<div class="highlight"><pre><span></span>$ hg status  
+M django_project/django_project/settings.py    
+? django_project/django_project/.settings.py.swp  
+? django_project/django_project/__init__.pyc  
+? django_project/django_project/settings.pyc     
+</pre></div>
+
+
+<p>在git和Mercurial中，也许你都发现了有一些文件我们是不想提交的，比如上面的Python的编译后文件.pyc和vim的临时文件.swp等。想要忽略这些文件需要创建<code>.gitignore</code>或者<code>hgignore</code>，放在项目的根目录下，然后按照shell的正则表达式写入匹配这些你想忽略的文件。举个例子，我的ignore文件内容如下:  </p>
+<div class="highlight"><pre><span></span>*.pyc  
+.*swp  
+</pre></div>
+
+
+<p>在提交之前，我们还有一点信息需要去追踪:我们所安装Python包。我们想追踪他们的名称和版本以便于我们在生产中无缝地创建我们的环境。幸运的是，pip有一个命令可以完全满足我们这个需求。  </p>
+<div class="highlight"><pre><span></span>$ pip freeze &gt; requirements.txt  
+</pre></div>
+
+
+<p>我将这些通过管道输出到一个叫做<code>requirements.txt</code>的文件中，将它加进版本控制中以便于我们经常性地更新这个列表。  </p>
+<p>将<code>settings.py</code>和<code>requirements.txt</code>提交:  </p>
+<div class="highlight"><pre><span></span>$ <span class="o">(</span>git/hg<span class="o">)</span> add django_project/settings.py requirements.txt  
+$ <span class="o">(</span>git/hg<span class="o">)</span> commit -m <span class="s1">&#39;Added South for database migrations&#39;</span>  
+</pre></div>
+
+
+<h2>创建我们的APP</h2>
+<p>用一般的方法使用<code>manage.py</code>创建一个app(<code>python manage.py startapp myapp</code>)，然后将其添加进<code>settings.py</code>中的<code>INSTALLED_APP</code>。在添加models之前我们需要做的事情是告诉South我们想要用它来做数据迁移:  </p>
+<div class="highlight"><pre><span></span>$ python manage.py schemamigration myapp --initial  
+</pre></div>
+
+
+<p>这行命令创建了一个数据迁移的文件，我们可以用它来同步数据结构的变化(如果有数据表的话)，也可以用来进行回退。我们这样使用这个文件来通过数据库变化(即使是空的):  </p>
+<div class="highlight"><pre><span></span>$ python manage.py migrate myapp  
+</pre></div>
+
+
+<p>South非常的智能化，知道从哪里找迁移文件(migration file)，同时也记下了我们的上一次数据库迁移操作。你能设定独立的迁移文件，但是一般我们不需要这么做。  </p>
+<p>当我们最终改动了model，我们可以这样让South创建一次数据迁移:  </p>
+<div class="highlight"><pre><span></span>$ python manage.py schemamigration myapp --auto  
+</pre></div>
+
+
+<p>这将检查myapp中的models，然后自动地对数据库进行相应的添加、删除和修改。这些改动可以使用上面同样的命令同步到数据库。  </p>
+<h2>我们的开发目录</h2>
+<p>一个你需要养成的习惯是要在一个与你线上文件隔离的目录中进行开发，原因是显而易见的。git和Mercurial能让这变得简单并且对我们的部署也有帮助。在你部署django_project的其他地方创建一个目录作为你的开发目录(我一般命名为dev)。  </p>
+<p>在你的开发目录中，使用git和Mercurial将你的当前项目clone过来:  </p>
+<div class="highlight"><pre><span></span>$ <span class="o">(</span>git/hg<span class="o">)</span> clone /path/to/my/project/  
+</pre></div>
+
+
+<p>这两个工具都会准确的将项目拷贝过来，包括所有的改动、分支(branches)和历史记录。从现在起，你应该在你的开发目录中工作。  </p>
+<p>由于git和Mercurial的分支使用起来都非常的简便，当你的开发与你的线上项目有交叉的时候，可以创建一个分支。使用下面的分别是两种版本控制系统的操作方法:  </p>
+<p><strong>(git)</strong>  </p>
+<div class="highlight"><pre><span></span>$ git checkout -b &lt;branchname&gt;  
+</pre></div>
+
+
+<p>这将创建一个已经命名了的分支，同时切换到该分支上。你所做的所有开发基本都应该在一个分支上进行，这样主分支(master)就能作为生产环境下主分支(master)的一个备份，任何你想恢复的时候都能够使用它。  </p>
+<p><strong>(Mercurial)</strong>  </p>
+<div class="highlight"><pre><span></span>$ hg branch &lt;branchname&gt;  
+</pre></div>
+
+
+<p>注意，在Mercurial社区中分支是一个存在争议的话题，虽然有很多有用的选择，但是没有一个“显然正确”的答案。在这里，我使用一个命名了的分支，这是最安全和有用的创建分支的风格。在这个分支下所做的一切提交都只在这个分支有效。  </p>
+<h2>使用Fabric来部署</h2>
+<p>现在我们做好了一个Django应用，该怎么部署它呢？<a href="http://docs.fabfile.org/en/1.7/">Fabric</a>。对于一个规模合理的项目来说，讨论其他的都是浪费时间。Fabric有很多的用途，但在项目部署上是一个亮点。  </p>
+<div class="highlight"><pre><span></span>$ pip install fabric  
+</pre></div>
+
+
+<p>Fabric需要一个命名为<code>fabfile.py</code>的文件<em>fabfile</em>，它定义了所有我们能做的操作。现在开始，在<code>fibfile.py</code>中写入如下内容，然后放在项目的根目录下。  </p>
+<div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">fabric.api</span> <span class="kn">import</span> <span class="n">local</span>  
+<span class="k">def</span> <span class="nf">prepare_development</span><span class="p">(</span><span class="n">brance_name</span><span class="p">):</span>
+    <span class="n">local</span><span class="p">(</span><span class="s1">&#39;python manage.py test django_project&#39;</span><span class="p">)</span>  
+    <span class="n">local</span><span class="p">(</span><span class="s1">&#39;git add -p &amp;&amp; git commit&#39;</span><span class="p">)</span> <span class="c1"># or local(&#39;hg add &amp;&amp; hg commit)</span>
+</pre></div>
+
+
+<p>上面的代码会运行测试代码然后提交变更，但是<em>仅在通过了你的测试代码</em>的情况下。这时候，当你在生产环境下做"pull"操作的时候就变作了一次部署。让我们为实际部署时的文件多添加一些代码:  </p>
+<div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">fabric.api</span> <span class="kn">import</span> <span class="n">lcd</span><span class="p">,</span> <span class="n">local</span>  
+<span class="k">def</span> <span class="nf">deploy</span><span class="p">():</span>  
+<span class="k">with</span> <span class="n">lcd</span><span class="p">(</span><span class="s1">&#39;/path/to/my/prod/area/&#39;</span><span class="p">):</span>  
+    <span class="c1"># with git…  </span>
+    <span class="n">local</span><span class="p">(</span><span class="s1">&#39;git pull /my/path/to/dev/area/&#39;</span><span class="p">)</span>
+    <span class="c1"># with Mercurial  </span>
+    <span class="n">local</span><span class="p">(</span><span class="s1">&#39;hg pull /my/path/to/dev/area/&#39;</span><span class="p">)</span>  
+    <span class="n">local</span><span class="p">(</span><span class="s1">&#39;hg update&#39;</span><span class="p">)</span>  
+    <span class="c1"># with both  </span>
+    <span class="n">local</span><span class="p">(</span><span class="s1">&#39;python manage.py migrate myapp&#39;</span><span class="p">)</span>  
+    <span class="n">local</span><span class="p">(</span><span class="s1">&#39;python manage.py test myapp&#39;</span><span class="p">)</span>  
+    <span class="n">local</span><span class="p">(</span><span class="s1">&#39;/my/command/to/restart/webserver&#39;</span><span class="p">)</span>  
+</pre></div>
+
+
+<p>上面的代码将从你开发环境下的主分支拉取代码，运行一些数据库迁移文件，运行你的测试代码，然后重启web服务器。所有的这些在终端中一行命令就能够搞定。一旦这些步骤中某一步出错，这个脚本就会停止执行并且给出提示信息。一旦你修复好，不需要手动运行这些步骤。你可以简单的重新运行部署命令，一切就都好了。  </p>
+<p>注意：上面这些代码是假定你的开发环境和部署环境是在同一台机器上的，如果不是这样，代码大部分也是相同的，但是需要使用Fabric的<code>run</code>方法代替<code>local</code>。具体可以阅读<a href="http://docs.fabfile.org/en/1.7/">Fabric的文档</a>。  </p>
+<p>现在我们创建好了<code>fabfile.py</code>，该怎么部署呢？简单，只需要运行:  </p>
+<div class="highlight"><pre><span></span>$ fab prepare_deployment  
+$ fab deploy  
+</pre></div>
+
+
+<p>从技术上来说，这两个命令可以合二为一，但是我发现将准备部署和实际部署操作分开能让你更加理解你到底在做什么。</p>
+            <a href="#" class="go-top">Go Top</a>
+    <div class="comments">
+        <div id="disqus_thread"></div>
+        <script type="text/javascript">
+            /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+            var disqus_shortname = "everlose"; // required: replace example with your forum shortname
+
+            /* * * DON'T EDIT BELOW THIS LINE * * */
+            (function() {
+                var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+                dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+                (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+            })();
+        </script>
+        <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+        <a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+    </div>
+<footer class="footer">
+    <p>&copy; 木头lbj &ndash;
+        Built with <a href="https://github.com/PurePelicanTheme/pure-single">Pure Theme</a>
+        for <a href="http://blog.getpelican.com/">Pelican</a>
+    </p>
+</footer>        </div>
+    </div>
+    </div>
+    <script>
+        var $top = $('.go-top');
+
+        // Show or hide the sticky footer button
+        $(window).scroll(function() {
+            if ($(this).scrollTop() > 200) {
+                $top.fadeIn(200);
+            } else {
+                $top.fadeOut(200);
+            }
+        });
+
+        // Animate the scroll to top
+        $top.click(function(event) {
+            event.preventDefault();
+            $('html, body').animate({scrollTop: 0}, 300);
+        })
+
+        // Makes sure that the href="#" attached to the <a> elements
+        // don't scroll you back up the page.
+        $('body').on('click', 'a[href="#"]', function(event) {
+            event.preventDefault();
+        });
+    </script>
+
+</body>
+</html>

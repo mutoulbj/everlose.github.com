@@ -1,0 +1,251 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="EverLose, EverLose">
+
+
+        <title>【译】测试Python 里的竞态条件 // EverLose // EverLose</title>
+
+    <link href="./theme/images/icons/favicon.ico" rel="icon">
+
+    <link rel="stylesheet" href="http://yui.yahooapis.com/pure/0.5.0/pure-min.css">
+    <link rel="stylesheet" href="./theme/css/font-awesome.min.css">
+    <link rel="stylesheet" href="./theme/css/pure.css">
+    <!-- Custom style -->
+    <link rel="stylesheet" type="text/css" href="./theme/css/style.css">
+    <link rel="stylesheet" href="./theme/css/pygments.css">
+
+    <script src="./theme/js/jquery-2.1.1.min.js"></script>
+    <script src="./theme/js/jquery.fitvids.js"></script>
+    <script type="text/javascript">
+        $(document).ready(function(){
+            $(".content").fitVids();
+        });
+    </script>
+</head>
+
+<body>
+    <div class="pure-g-r" id="layout">
+        <div class="sidebar pure-u">
+            <div class="cover-img" style="background-image: url('http://everlose.qiniudn.com/sanqiao.jpg')">
+                <div class="cover-body">
+                    <header class="header">
+                        <hgroup>
+                            <h1 class="brand-main"><a href=".">EverLose</a></h1>
+                            <p class="tagline">EverLose</p>
+                                <p class="social">
+                                    <a href="http://weibo.com/mutoulbj">
+                                        <i class="fa fa-weibo fa-3x"></i>
+                                    </a>
+                                    <a href="http://github.com/mutoulbj">
+                                        <i class="fa fa-github fa-3x"></i>
+                                    </a>
+                                    <a href="http://twitter.com/mutoulbj">
+                                        <i class="fa fa-twitter fa-3x"></i>
+                                    </a>
+                                </p>
+                        </hgroup>
+                    </header>
+                </div>
+            </div>
+        </div>
+    <div class="pure-u">
+        <div class="content">
+            <section class="post">
+                <header class="post-header">
+                    <h1>【译】测试Python 里的竞态条件</h1>
+                        <p class="post-meta">
+                            <i class="fa fa-book"></i>                                 <a class="post-category" href="./tag/python.html">python</a>
+                        </p>
+                </header>
+            </section>
+            <p><a href="http://www.oreills.co.uk/2015/03/01/testing-race-conditions-in-python.html">原文地址</a></p>
+<h1>测试Python 里的竞态条件</h1>
+<p>不论何时，当有多于一个进程或者线程访问相同数据的时候，竞态条件都是一个危险的事情。本文探讨了发现竞态条件之后怎么去进行测试。  </p>
+<h2>Incrmt</h2>
+<p>（假设）你目前在一个只做一件事情并做的很好的热门初创企业Incrmt里工作。  </p>
+<p>你部署了一个全球的计数器和一个加号的标志。人们可以点击那个加号，然后计数器增加1。它非常简单且让人上瘾。这是未来一个了不起的事情。  </p>
+<p>投资者们都在登船旅行，但是你有了一个麻烦。  </p>
+<h2>竞态条件</h2>
+<p>在内测的时候，Abraham和Belinda太兴奋了，分别点击了加号按钮100次。你的服务器日志显示接收了200次请求，但是计数器却只显示173。有一些并没有被加上。  </p>
+<p>为了把”Incrmnt原来是Excrmnt”抛到脑后，你检查了以下代码。  </p>
+<div class="highlight"><pre><span></span><span class="c1"># incrmnt.py</span>
+<span class="kn">import</span> <span class="nn">db</span>
+<span class="k">def</span> <span class="nf">incremnt</span><span class="p">():</span>
+    <span class="n">count</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">get_count</span><span class="p">()</span>
+    <span class="n">new_count</span> <span class="o">=</span> <span class="n">count</span> <span class="o">+</span> <span class="mi">1</span>
+    <span class="n">db</span><span class="o">.</span><span class="n">set_count</span><span class="p">(</span><span class="n">new_count</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">new_count</span>
+</pre></div>
+
+
+<p>你的Web服务器使用了大量的进程来增加吞吐量，所以这个方法可能 同时再2个不同的线程中执行。如果在执行的时间线上你不够走运，下面的情况就会发生。  </p>
+<div class="highlight"><pre><span></span><span class="c1"># 线程1和线程2同一时间在两个不同的进程中执行  </span>
+<span class="c1"># 为了方便展示把他们并排放在一起  </span>
+<span class="c1"># 垂直方向用来展示在某个时间点是那条语句在运行  </span>
+<span class="c1"># 线程 1                                                    # 线程 2  </span>
+<span class="k">def</span> <span class="nf">increment</span><span class="p">():</span>
+                                                                 <span class="k">def</span> <span class="nf">increment</span><span class="p">():</span>
+    <span class="c1"># get_count  return 0</span>
+    <span class="n">count</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">get_count</span><span class="p">()</span>
+                                                                      <span class="c1"># get_count return 0 again</span>
+                                                                      <span class="n">count</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">get_count</span><span class="p">()</span>
+    <span class="n">new_count</span> <span class="o">=</span> <span class="n">count</span> <span class="o">+</span> <span class="mi">1</span>
+    <span class="c1"># set_count called with 1</span>
+    <span class="n">db</span><span class="o">.</span><span class="n">set_count</span><span class="p">(</span><span class="n">new_count</span><span class="p">)</span>
+                                                                      <span class="n">new_count</span> <span class="o">=</span> <span class="n">count</span> <span class="o">+</span> <span class="mi">1</span>
+                                                                      <span class="c1"># set_count called with 1 again</span>
+                                                                      <span class="n">db</span><span class="o">.</span><span class="n">set_count</span><span class="p">(</span><span class="n">new_count</span><span class="p">)</span>
+</pre></div>
+
+
+<p>所以，虽然<code>count</code>应该是被增加了2次，实际上只增加了1。  </p>
+<p>你知道你能修复这个代码让它是线程安全的，但是在你做这些之前，你想要写个测试来证明竞态存在。  </p>
+<h2>重现竞态</h2>
+<p>尽可能接近得重现上面的情况是最理想的，关键的竞态是：  </p>
+<blockquote>
+<p><code>get_count</code>调用都必须在<code>set_count</code>调用之前，这样<code>count</code>在两个线程中才拥有同一个值。  </p>
+</blockquote>
+<p><code>set_count</code>在什么时候调用无所谓，只要他们都在另一个<code>get_count</code>调用之后就行。  </p>
+<p>简单起见，来试着重现这个情况，让线程2在线程1的<code>get_count</code>调用之后执行:  </p>
+<div class="highlight"><pre><span></span><span class="c1"># 线程 1                                                  # 线程 2</span>
+<span class="k">def</span> <span class="nf">increment</span><span class="p">():</span>
+    <span class="c1"># get_count returns 0</span>
+    <span class="n">count</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">get_count</span><span class="p">()</span>
+                                                                <span class="k">def</span> <span class="nf">increment</span><span class="p">():</span>
+                                                                    <span class="c1"># get_count returns 0 again</span>
+                                                                    <span class="n">count</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">get_count</span><span class="p">()</span>
+                                                                    <span class="c1"># set_count called with 1</span>
+                                                                    <span class="n">new_count</span> <span class="o">=</span> <span class="n">count</span> <span class="o">+</span> <span class="mi">1</span>
+                                                                    <span class="n">db</span><span class="o">.</span><span class="n">set_count</span><span class="p">(</span><span class="n">new_count</span><span class="p">)</span>
+    <span class="c1"># set_count called with 1 again</span>
+    <span class="n">new_count</span> <span class="o">=</span> <span class="n">count</span> <span class="o">+</span> <span class="mi">1</span>
+    <span class="n">db</span><span class="o">.</span><span class="n">set_count</span><span class="p">(</span><span class="n">new_count</span><span class="p">)</span>
+</pre></div>
+
+
+<p><a href="https://pypi.python.org/pypi/before_after/">before_after</a>库提供了一些功能可以帮助我们来重现这个情况。它能在方法的前面或者后面插入一些代码。  </p>
+<p><code>before_after</code>依赖<a href="https://pypi.python.org/pypi/mock">mock</a>库来获取方法。如果你对他们不熟悉的话建议阅读<a href="http://www.voidspace.org.uk/python/mock/">这些文档</a>。其中重要的部分是<a href="http://www.voidspace.org.uk/python/mock/patch.html#where-to-patch">Where To Patch</a>。  </p>
+<p>我们想要在线程1调用了<code>get_count</code>之后执行线程2，然后重新唤醒线程1继续执行。  </p>
+<p>可以编写以下测试:  </p>
+<div class="highlight"><pre><span></span><span class="c1"># test_incrmnt.py  </span>
+<span class="kn">import</span> <span class="nn">unittest</span>
+<span class="kn">import</span> <span class="nn">before_after</span>
+<span class="kn">import</span> <span class="nn">db</span>
+<span class="kn">import</span> <span class="nn">incrmnt</span>
+
+<span class="k">class</span> <span class="nc">TestIncrmnt</span><span class="p">(</span><span class="n">unitest</span><span class="o">.</span><span class="n">TestCase</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">setUp</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">db</span><span class="o">.</span><span class="n">reset_db</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">test_increment_race</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># 在调用get_count之后，调用increment</span>
+        <span class="k">with</span> <span class="n">before_after</span><span class="o">.</span><span class="n">after</span><span class="p">(</span><span class="err">‘</span><span class="n">increment</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">get_count</span><span class="err">’</span><span class="p">,</span> <span class="n">incrmnt</span><span class="o">.</span><span class="n">increment</span><span class="p">):</span>
+            <span class="c1"># 调用increment产生竞态  </span>
+            <span class="n">incrmnt</span><span class="o">.</span><span class="n">increment</span><span class="p">()</span>
+        <span class="n">count</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">get_count</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">count</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+</pre></div>
+
+
+<p>在第一次<code>get_count</code>调用之后，我们使用了<code>before_after</code>的<code>after</code>上下文管理器来调用<code>increment</code>。  </p>
+<p><code>before_after</code>默认只调用一次<code>after</code>方法一次。这对大多数情况都是有用的，否则我们就需要清理栈了（<code>increment</code>调用<code>get_count</code>会循环再次调用<code>increment</code>,这又会继续调用<code>get_count</code>…）。  </p>
+<p>这个测试失败了，因为<code>count</code>等于1而不是2.现在我们重现了竞态条件，接下来对它进行修复。  </p>
+<h2>减少竞态</h2>
+<p>我们使用一个简单的锁来解决这个问题，这样可以用<code>before_after</code>来做一个更好的示例，另外<code>before_after</code>对于多线程应用的测试并不好用。显然这不是个理想的解决方案，最好是在数据存储层使用原子操作来进行数据更新。  </p>
+<p>在<code>incrmnt.py</code>中添加一个新方法:  </p>
+<div class="highlight"><pre><span></span><span class="c1"># incrmnt.py</span>
+<span class="k">def</span> <span class="nf">locking_increment</span><span class="p">():</span>
+    <span class="k">with</span> <span class="n">db</span><span class="o">.</span><span class="n">get_lock</span><span class="p">():</span>
+        <span class="k">return</span> <span class="n">increment</span><span class="p">()</span>
+</pre></div>
+
+
+<p>这保证了同一时间只有一个线程对counter进行读写操作。当一个线程试图获取已经被另一个线程占用的锁时，将会抛出<code>CouldNotLock</code>异常。  </p>
+<p>现在可以添加以下测试:   </p>
+<div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">test_locking_increment_race</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="nf">erroring_locking_increment</span><span class="p">():</span>
+        <span class="c1"># 再试图获取被另一线程占用的锁时触发CouldNotLock异常</span>
+        <span class="c1"># 这里捕获这个异常，否则测试将会失败</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">assertRaises</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">CouldNotLock</span><span class="p">):</span>
+            <span class="n">incrmnt</span><span class="o">.</span><span class="n">locking_increment</span><span class="p">()</span>
+
+    <span class="k">with</span> <span class="n">before_after</span><span class="o">.</span><span class="n">after</span><span class="p">(</span><span class="err">‘</span><span class="n">incrmnt</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">get_count</span><span class="err">’</span><span class="p">,</span> <span class="n">erroring_locking_increment</span><span class="p">):</span>
+        <span class="n">incrmnt</span><span class="o">.</span><span class="n">locking_increment</span><span class="p">()</span>
+
+    <span class="n">count</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">get_count</span><span class="p">()</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">count</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+</pre></div>
+
+
+<p>现在在某个时间点只有一个线程能使计数器增长了。  </p>
+<h2>减轻竞态</h2>
+<p>这里还有一个问题，当两次请求碰撞的时候，有一个会被丢弃。为了解决这个问题，我们可以进行重试(使用像<a href="http://funcy.readthedocs.org/en/stable/flow.html#retry">funcy retry</a>这样的库实现起来非常简洁):  </p>
+<div class="highlight"><pre><span></span><span class="c1"># incrmnt.py  </span>
+<span class="k">def</span> <span class="nf">retrying_locking_increment</span><span class="p">():</span>
+    <span class="nd">@retry</span><span class="p">(</span><span class="n">tries</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">errors</span><span class="o">=</span><span class="n">db</span><span class="o">.</span><span class="n">CouldNotLock</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">_increment</span><span class="p">():</span>
+        <span class="k">return</span> <span class="n">locking_increment</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">_increment</span><span class="p">()</span>
+</pre></div>
+
+
+<p>当我们需要比这个方法提供的结果更严苛的时候，可以把数据的增长交给数据库的原子更新或传输来做，不在应用层面进行处理。    </p>
+<h2>结论</h2>
+<p>Incrmnt现在从竞态中解脱了，人们可以一整天都开心地进行点击而不用担心计数的问题。  </p>
+<p>这是一个简单的例子，但是<code>before_after</code>可以在更复杂的竞态中使用来保证我们的方法正确地处理了这种情况。可以对使用线程的环境进行测试和重现能让我们在正确处理竞态条件时更加地自信。</p>
+            <a href="#" class="go-top">Go Top</a>
+    <div class="comments">
+        <div id="disqus_thread"></div>
+        <script type="text/javascript">
+            /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+            var disqus_shortname = "everlose"; // required: replace example with your forum shortname
+
+            /* * * DON'T EDIT BELOW THIS LINE * * */
+            (function() {
+                var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+                dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+                (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+            })();
+        </script>
+        <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+        <a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+    </div>
+<footer class="footer">
+    <p>&copy; 木头lbj &ndash;
+        Built with <a href="https://github.com/PurePelicanTheme/pure-single">Pure Theme</a>
+        for <a href="http://blog.getpelican.com/">Pelican</a>
+    </p>
+</footer>        </div>
+    </div>
+    </div>
+    <script>
+        var $top = $('.go-top');
+
+        // Show or hide the sticky footer button
+        $(window).scroll(function() {
+            if ($(this).scrollTop() > 200) {
+                $top.fadeIn(200);
+            } else {
+                $top.fadeOut(200);
+            }
+        });
+
+        // Animate the scroll to top
+        $top.click(function(event) {
+            event.preventDefault();
+            $('html, body').animate({scrollTop: 0}, 300);
+        })
+
+        // Makes sure that the href="#" attached to the <a> elements
+        // don't scroll you back up the page.
+        $('body').on('click', 'a[href="#"]', function(event) {
+            event.preventDefault();
+        });
+    </script>
+
+</body>
+</html>

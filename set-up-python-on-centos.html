@@ -1,0 +1,309 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="EverLose, EverLose">
+
+
+        <title>在CentOS 6.4上设置Python 2.7.6和3.3.3环境 // EverLose // EverLose</title>
+
+    <link href="./theme/images/icons/favicon.ico" rel="icon">
+
+    <link rel="stylesheet" href="http://yui.yahooapis.com/pure/0.5.0/pure-min.css">
+    <link rel="stylesheet" href="./theme/css/font-awesome.min.css">
+    <link rel="stylesheet" href="./theme/css/pure.css">
+    <!-- Custom style -->
+    <link rel="stylesheet" type="text/css" href="./theme/css/style.css">
+    <link rel="stylesheet" href="./theme/css/pygments.css">
+
+    <script src="./theme/js/jquery-2.1.1.min.js"></script>
+    <script src="./theme/js/jquery.fitvids.js"></script>
+    <script type="text/javascript">
+        $(document).ready(function(){
+            $(".content").fitVids();
+        });
+    </script>
+</head>
+
+<body>
+    <div class="pure-g-r" id="layout">
+        <div class="sidebar pure-u">
+            <div class="cover-img" style="background-image: url('http://everlose.qiniudn.com/sanqiao.jpg')">
+                <div class="cover-body">
+                    <header class="header">
+                        <hgroup>
+                            <h1 class="brand-main"><a href=".">EverLose</a></h1>
+                            <p class="tagline">EverLose</p>
+                                <p class="social">
+                                    <a href="http://weibo.com/mutoulbj">
+                                        <i class="fa fa-weibo fa-3x"></i>
+                                    </a>
+                                    <a href="http://github.com/mutoulbj">
+                                        <i class="fa fa-github fa-3x"></i>
+                                    </a>
+                                    <a href="http://twitter.com/mutoulbj">
+                                        <i class="fa fa-twitter fa-3x"></i>
+                                    </a>
+                                </p>
+                        </hgroup>
+                    </header>
+                </div>
+            </div>
+        </div>
+    <div class="pure-u">
+        <div class="content">
+            <section class="post">
+                <header class="post-header">
+                    <h1>在CentOS 6.4上设置Python 2.7.6和3.3.3环境</h1>
+                        <p class="post-meta">
+                            <i class="fa fa-book"></i>                                 <a class="post-category" href="./tag/centos.html">centos</a>
+                        </p>
+                </header>
+            </section>
+            <p><code>写在前面</code>: 虽然我也认为目前使用Ubuntu用作服务器系统不存在任何问题,但是很多时候基于安全性与稳定性考虑还是难免会选择红帽系列。更多时候作为小码农也没有权力做技术决策吧[无奈状]。话说回来,感觉难受只是因为不熟悉,熟悉也就好了。作为Ubuntu党,这些天一直在与CentOS打交道,一通折腾下来,畅快很多。于是想写篇博客记录,却发现Digital Ocean上的一篇博文写的不能再好了(Digital Ocean上的文章都是精品)。所以,还是直接翻译吧。<a href="https://www.digitalocean.com/community/tutorials/how-to-set-up-python-2-7-6-and-3-3-3-on-centos-6-4">原文链接</a>。  </p>
+<h2>简介</h2>
+<p>为了让应用在特定的环境中运行,管理服务器常常是作为开发者的责任之一。当面临选择操作系统时(尤其是生产环境),基于安全等方面的考虑,CentOS会是呼声最高的操作系统之一。  </p>
+<p>然而,当你开始使用CentOS时就会傻眼了,CentOS内置的Python版本还是2.6(甚至2.4.3),这用于应用显然是不合适的。<code>注:由于Linux系统很多方面都依赖Python,所以一般是不能直接替换版本的</code>。  </p>
+<p>这篇文章将会讲述如何下载和设置Python(2.7.6和3.3.3)而不破坏内置的2.6(或2.4)版本的Python。这非常重要,因为一些像YUM等一些系统工具是依赖内置版本的。同时将安装<code>pip</code>和<code>virualenv</code>这两个非常流行的Python组件。  </p>
+<p>读完这篇文章,你将能同时使用任意版本的Python,创建虚拟环境以及为任意版本的Python下载和管理开发包。  </p>
+<h2>CentOS及它的设计理念</h2>
+<p>开始安装之前,先来说说CentOS。  </p>
+<blockquote>
+<p>为什么CentOS使用旧版本的应用?  </p>
+</blockquote>
+<p>CentOS是源于RHEL(Red Hat Enterprise Linux)的一个社区发行版。而RHEL是面向商业用户的,因此需要保证长期的支持和稳定性。  </p>
+<p>因此,追求系统的稳定性是最重要的原因,所有的软件都是通过了测试,更加稳定的版本。这背后的哲学就是:<code>如果没有崩溃,不要去修复。(if it ain't broke,don't fix it)</code>  </p>
+<blockquote>
+<p>为什么开发版的库和应用需要另外安装并与内置版本共存?  </p>
+</blockquote>
+<p>默认的CentOS版本身并不带有很多的工具,而那些内置的工具往往是系统依赖的(如:YUM)。如果需要任何时候都保持系统的稳定性,不破坏系统的任何东西,在改动他们的时候就需要格外的小心了。  </p>
+<p>不要认为系统发行版中的工具都可以为你所用而养成按照自己的需要进行设置的习惯。  </p>
+<p>使用这篇简单易用的说明,你将可以使用任意版本的Python,同时你也能从中学会如何安装其他应用(使用源码包)。  </p>
+<h2>系统准备,安装Python</h2>
+<p>像其他的程序一样,在CentOS中安装Python需要简单的几个步骤:更新系统,获取所需版本的Python,进行设置。  </p>
+<p><code>提示</code>: 你可以在Python的<a href="http://www.python.org/download/releases/">发行页面</a>中查看和选择你所需要的版本,使用本教程你可以安装其中任意版本或所有版本。  </p>
+<p><code>注</code>: 本教程适用于CentOS 6.5、5.8以及6.4版本。  </p>
+<h2>更新内置CentOS应用</h2>
+<p>开始安装之前,确保已经将内置的应用升级到最新的可用版本。<br />
+使用以下命令即可进行升级:  </p>
+<div class="highlight"><pre><span></span>yum -y update
+</pre></div>
+
+
+<h2>系统准备</h2>
+<p>CentOS是简洁的,甚至太简洁了也不为过。这就意味着很多你想使用的应用和工具默认都没有安装。  </p>
+<p>这是设计哲学决定的,我们需要一些库和工具(比如:development [related] tools)默认都没有在发行版中安装。因此,再我们继续下一步之前需要先下载和安装他们。  </p>
+<p>使用包管理工具<code>yum</code>我们有两种方法在系统中安装这些工具:  </p>
+<p><strong>选择1</strong>(不推荐)一个个的下载和安装这些工具(如:make,gcc等)。这样很可能再安装其中一个工具的时候发现它依赖另一个库或者工具,这时会抛出错误,而你不得不回头重新下载和安装。  </p>
+<p>正确和推荐的方法是<strong>选择2</strong>,使用简单的yum命令一次性安装所有的软件组。  </p>
+<h2>YUM Software Group</h2>
+<p>yum的软件组是由一些常用的工具包组成的,只需要知道软件组的名称就能使用一个命令就能同时安装和执行所有的软件。甚至可以一次性同时下载和安装多个软件组。  </p>
+<p>我们现在所需要的软件组就是<code>Development Tools</code>。  </p>
+<h2>怎样使用YUM在CentOS中安装Development Tools</h2>
+<p>使用下面的命令安装所需的development tools:  </p>
+<div class="highlight"><pre><span></span>yum groupinstall -y development
+</pre></div>
+
+
+<p>或:  </p>
+<div class="highlight"><pre><span></span>yum groupinstall -y <span class="s1">&#39;development tools&#39;</span>
+</pre></div>
+
+
+<p><code>注</code>:一些包在旧版本的CentOS中不能正常工作。  </p>
+<p>安装一些附加的包:  </p>
+<div class="highlight"><pre><span></span>yum install -y zlib-dev openssl-devel sqlite-devel bzip2-devel
+</pre></div>
+
+
+<p><code>提示</code>:以上这些附加的包虽然是可选的,但是在大部分的任务中它们都是很常用的,或者以后会用到。除非你使用其他高级的方法进行了安装,否则Python在编译的过程中将不能链接他们,这样在使用过程中可能会出现一些问题。  </p>
+<h2>源码安装Python</h2>
+<p>在系统中设置Python需要以下3个步骤和4个工具:  </p>
+<ul>
+<li><strong>下载</strong> 下载源码压缩包(wget）  </li>
+<li><strong>解压</strong> 解压缩安装包(tar)  </li>
+<li><strong>设置</strong> 和 <strong>构建</strong> (autoconf(configure)/make)  </li>
+</ul>
+<p><em>GNU wget</em>  </p>
+<p>GNU的wget工具可以使用多种协议(HTTP,FTP)下载文件。尽管之前旧版本的CentOS都缺失,但是现在是自带的工具了。  </p>
+<div class="highlight"><pre><span></span>使用示例: wget <span class="o">[</span>URL<span class="o">]</span>  
+</pre></div>
+
+
+<p><em>GNU Tar</em>  </p>
+<p>GNU的Tar工具是基本的压缩文件和解压缩的工具.  </p>
+<div class="highlight"><pre><span></span>使用示例: tar <span class="o">[</span>options<span class="o">]</span> <span class="o">[</span>argments<span class="o">]</span>
+</pre></div>
+
+
+<p><em>GNU autoconf and GNU make</em>  </p>
+<p>autoconf和make是两个不同的工具,常一起使用来进行软件的编译与安装。  </p>
+<ul>
+<li><strong>使用./configure</strong>在安装前构建源码  </li>
+<li><strong>使用 make</strong>进行库链接工作  </li>
+<li><strong>使用 make install</strong> 安装软件  </li>
+</ul>
+<h2>下载,构建(编译),安装Python</h2>
+<p>本节将所有的介绍都可以换成你所需的Python版本。完成之后你将能同时使用多个版本的Python,只是有时候你需要明确指出你所使用的版本,如使用python2.7或者python3.3来代替默认的python命令。  </p>
+<h4>下载源码压缩包</h4>
+<p>使用wget从网上下载所需的安装包,这里使用<code>2.7.6</code>版本。  </p>
+<div class="highlight"><pre><span></span>wget http://www.python.org/ftp/python/2.7.6/Python-2.7.6.tar.xz
+</pre></div>
+
+
+<p>3.3.3版本: </p>
+<div class="highlight"><pre><span></span>wget http://www.python.org/ftp/python/3.3.3/Python-3.3.3.tar.xz
+</pre></div>
+
+
+<p>(可选步骤):<code>xz</code>工具:可以看出这里的压缩包是使用<code>XZ</code>库进行压缩的,你的系统中也许不包括这个工具,如果没有可以使用下面的命令进行安装:  </p>
+<div class="highlight"><pre><span></span>yum install xz-libs
+</pre></div>
+
+
+<h4>解压源码包</h4>
+<p>这里的解压的包括两个步骤:先解压<code>xz</code>包,再解压<code>tar</code>包。  </p>
+<div class="highlight"><pre><span></span>xz -d Python-2.7.6.tar.xz
+
+tar -xvf Python-2.7.6.tar
+</pre></div>
+
+
+<p>3.3.3版本示例:</p>
+<div class="highlight"><pre><span></span>xz -d Python-3.3.3.tar.xz
+tar -xvf Python-3.3.3.tar
+</pre></div>
+
+
+<h4>编译与安装</h4>
+<p>在构建源码之前需要确保所有的依赖和工具都已经准备好了。构建过程是自动的。  </p>
+<div class="highlight"><pre><span></span><span class="c1"># 进入源码包目录</span>
+<span class="nb">cd</span> Python-2.7.6
+
+<span class="c1"># 开始构建之前指定安装的目录</span>
+<span class="c1"># 默认会被安装进 /usr/local目录</span>
+<span class="c1"># 可以使用--prefix参数来进行指定</span>
+./configure --prefix<span class="o">=</span>/usr/local
+</pre></div>
+
+
+<p>3.3.3版本示例:</p>
+<div class="highlight"><pre><span></span><span class="nb">cd</span> Python-3.3.3
+./configure
+</pre></div>
+
+
+<p>因为我们已经提前下载了所需的工具和应用,所以这个过程将顺利地自动执行。当完成的时候就可以进入下一步:<em>构建与安装</em>  </p>
+<h4>构建与安装</h4>
+<p>一般我们应该使用<code>make install</code>来进行安装,但是为了不覆盖系统默认的版本,我们使用<code>make altinstall</code>。  </p>
+<div class="highlight"><pre><span></span><span class="c1"># 构建源码</span>
+<span class="c1"># 将持续一段时间</span>
+make
+
+<span class="c1"># 安装</span>
+make altinstall
+</pre></div>
+
+
+<p>3.3.3版本示例:</p>
+<div class="highlight"><pre><span></span>make <span class="p">&amp;</span> make altinstall   <span class="c1"># 两个命令可以合为一个</span>
+</pre></div>
+
+
+<h4>(可选步骤)将新版本Python目录添加进PATH</h4>
+<blockquote>
+<p>如果你是完全按照本教程进行操作的,那可以跳过本部分内容。如果你选择了不是/usr/local的目录来安装Python,就需要使用这部分内容来避免每次使用新安装的Python时都输入可执行命令的全路径。  </p>
+</blockquote>
+<p>在安装完成之后,我们能够使用全路径来使用可执行的二进制文件,但是只有该版本Python的二进制可执行文件已经添加进了PATH变量之后才能在任意位置使用该可执行文件。   </p>
+<div class="highlight"><pre><span></span><span class="c1"># example: export PATH=&quot;[/path/to/installation]:$PATH&quot;  </span>
+<span class="nb">export</span> <span class="nv">PATH</span><span class="o">=</span><span class="s2">&quot;/usr/local/bin:</span>$<span class="s2">PATH&quot;</span>
+</pre></div>
+
+
+<h2>设置基本的Python组件pip和virtualenv</h2>
+<p>安装完了Python,现在可以来完成最后的进行部署应用的生产环境了。我们需要设置两个常用的Python组件:<code>pip</code>包管理工具和<code>virtualenv</code>虚拟环境管理工具。  </p>
+<p>下面这篇文章详细地介绍了这两个工具<a href="https://www.digitalocean.com/community/articles/common-python-tools-using-virtualenv-installing-with-pip-and-managing-packages"> Common Python Tools: Using virtualenv, Installing with Pip, and Managing Packages</a>  </p>
+<h4>使用新的Python来安装pip</h4>
+<p>安装<code>pip</code>之前,需要安装它唯一的依赖:<code>setuptools</code>  </p>
+<p>执行以下命令即可安装Pythoon2.7.6的pip:  </p>
+<div class="highlight"><pre><span></span><span class="c1"># 使用wget下载</span>
+wget --no-check-certificate https://pypi.python.org/packages/source/s/setuptools/setuptools-1.4.2.tar.gz
+
+<span class="c1"># 解压</span>
+tar -xvf setuptools-1.4.2.tar.gz
+
+<span class="c1"># 进入目录</span>
+<span class="nb">cd</span> setuptools-1.4.2
+
+<span class="c1"># 使用刚安装的Python安装</span>
+python2.7 setup.py install
+</pre></div>
+
+
+<h4>下载pip文件,使用Python2.7进行安装</h4>
+<div class="highlight"><pre><span></span>curl https://raw.githubusercontent.com/pypa/pip/master/contrib/get-pip.py <span class="p">|</span> python2.7 -
+</pre></div>
+
+
+<h4>安装virtualenv</h4>
+<p>现在已经安装好了pip,就可以使用它来安装virtualenv了。  </p>
+<p>执行下面的命令下载和安装virtualenv:  </p>
+<div class="highlight"><pre><span></span>pip install virtualenv
+</pre></div>
+
+
+<hr />
+<p>以上,就完成了所有的工作。在实际的操作中我发现,目前CentOS6的新版,在编译安装Python时不使用<code>make altinstall</code>而使用<code>make install</code>不会出现任何问题,这时,使用<code>python</code>命令可以进入新安装版本的交互环境,而yum不会出现异常,这倒是个不错的改进。</p>
+            <a href="#" class="go-top">Go Top</a>
+    <div class="comments">
+        <div id="disqus_thread"></div>
+        <script type="text/javascript">
+            /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+            var disqus_shortname = "everlose"; // required: replace example with your forum shortname
+
+            /* * * DON'T EDIT BELOW THIS LINE * * */
+            (function() {
+                var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+                dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+                (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+            })();
+        </script>
+        <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+        <a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+    </div>
+<footer class="footer">
+    <p>&copy; 木头lbj &ndash;
+        Built with <a href="https://github.com/PurePelicanTheme/pure-single">Pure Theme</a>
+        for <a href="http://blog.getpelican.com/">Pelican</a>
+    </p>
+</footer>        </div>
+    </div>
+    </div>
+    <script>
+        var $top = $('.go-top');
+
+        // Show or hide the sticky footer button
+        $(window).scroll(function() {
+            if ($(this).scrollTop() > 200) {
+                $top.fadeIn(200);
+            } else {
+                $top.fadeOut(200);
+            }
+        });
+
+        // Animate the scroll to top
+        $top.click(function(event) {
+            event.preventDefault();
+            $('html, body').animate({scrollTop: 0}, 300);
+        })
+
+        // Makes sure that the href="#" attached to the <a> elements
+        // don't scroll you back up the page.
+        $('body').on('click', 'a[href="#"]', function(event) {
+            event.preventDefault();
+        });
+    </script>
+
+</body>
+</html>

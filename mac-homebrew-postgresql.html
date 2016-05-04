@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="EverLose, EverLose">
+
+
+        <title>Mac下使用homebrew安装postgresql及配置 // EverLose // EverLose</title>
+
+    <link href="./theme/images/icons/favicon.ico" rel="icon">
+
+    <link rel="stylesheet" href="http://yui.yahooapis.com/pure/0.5.0/pure-min.css">
+    <link rel="stylesheet" href="./theme/css/font-awesome.min.css">
+    <link rel="stylesheet" href="./theme/css/pure.css">
+    <!-- Custom style -->
+    <link rel="stylesheet" type="text/css" href="./theme/css/style.css">
+    <link rel="stylesheet" href="./theme/css/pygments.css">
+
+    <script src="./theme/js/jquery-2.1.1.min.js"></script>
+    <script src="./theme/js/jquery.fitvids.js"></script>
+    <script type="text/javascript">
+        $(document).ready(function(){
+            $(".content").fitVids();
+        });
+    </script>
+</head>
+
+<body>
+    <div class="pure-g-r" id="layout">
+        <div class="sidebar pure-u">
+            <div class="cover-img" style="background-image: url('http://everlose.qiniudn.com/sanqiao.jpg')">
+                <div class="cover-body">
+                    <header class="header">
+                        <hgroup>
+                            <h1 class="brand-main"><a href=".">EverLose</a></h1>
+                            <p class="tagline">EverLose</p>
+                                <p class="social">
+                                    <a href="http://weibo.com/mutoulbj">
+                                        <i class="fa fa-weibo fa-3x"></i>
+                                    </a>
+                                    <a href="http://github.com/mutoulbj">
+                                        <i class="fa fa-github fa-3x"></i>
+                                    </a>
+                                    <a href="http://twitter.com/mutoulbj">
+                                        <i class="fa fa-twitter fa-3x"></i>
+                                    </a>
+                                </p>
+                        </hgroup>
+                    </header>
+                </div>
+            </div>
+        </div>
+    <div class="pure-u">
+        <div class="content">
+            <section class="post">
+                <header class="post-header">
+                    <h1>Mac下使用homebrew安装postgresql及配置</h1>
+                        <p class="post-meta">
+                            <i class="fa fa-book"></i>                                 <a class="post-category" href="./tag/postgresql.html">postgresql</a>
+                                <a class="post-category" href="./tag/homebrew.html">homebrew</a>
+                        </p>
+                </header>
+            </section>
+            <p>之前试过macports，但是看网上的评价不怎么样，主要是说会安装一些其他的包，对于我这样有洁癖的来说当然不行了。另外看到<a href="http://mxcl.github.io/homebrew/" title="HomeBrew">HomeBrew</a>，便试了下，果然很爽，尤其是对于用惯了apt-get的来说。<a href="http://mxcl.github.io/homebrew/" title="HomeBrew">主页</a>上有很方便的安装方法，但是蛋疼的是，在天朝常常会没法连接，没关系，可以打开<a href="https://raw.github.com/mxcl/homebrew/go">这个地址</a>，将网页另存为以.rb结尾的文件，然后终端中使用ruby 文件.rb就可以了。但是，有时候就是打开这个raw页面也需要爬墙，唉，无奈。好在爬墙总不是什么困难的事情。  </p>
+<p>安装好HomeBrew之后，使用  </p>
+<blockquote>
+<p>brew update&amp;brew upgrade   </p>
+</blockquote>
+<p>更新后，便可以开始postgresql了。  </p>
+<blockquote>
+<p>brew install postgresql  </p>
+</blockquote>
+<p>创建postgreSql数据库:  </p>
+<blockquote>
+<p>initdb /usr/local/var/postgres  </p>
+</blockquote>
+<p>启动服务：  </p>
+<blockquote>
+<p>pg_ctl -D /usr/local/var/postgres -l /usr/local/var/postgres/server.log start  </p>
+</blockquote>
+<p>停止服务:  </p>
+<blockquote>
+<p>pg_ctl -D /usr/local/var/postgres stop -s -m fast  </p>
+</blockquote>
+<p>自动启动服务:  </p>
+<blockquote>
+<p>mkdir -p ~/Library/LaunchAgents<br />
+cp /usr/local/Cellar/postgresql/9.2.4/homebrew.mxcl.postgresql.plist ~/Library/LaunchAgents/launchctl load -w ~/Library/LaunchAgents/homebrew.mxcl.postgresql.plist  </p>
+</blockquote>
+<p>删除自动启动服务:  </p>
+<blockquote>
+<p>launchctl unload -w ~/Library/LaunchAgents/homebrew.mxcl.postgresql.plist</p>
+</blockquote>
+<p>好了，现在基本就算完成了，很简单。这时候下载pgadmin3，安装之后会出现<strong>role 'postgres' does not exist</strong>的错误，原因你是没有创建postgres用户。  </p>
+<blockquote>
+<p>createuser -d -a -P postgres    </p>
+</blockquote>
+<p>执行完这行命令后，postgresl角色就创建好了，再连接就不会报错。  </p>
+<p>导入sql文件，如导入back.sql：</p>
+<blockquote>
+<p>psql -d database_name -f back.sql  </p>
+</blockquote>
+<p>在linux下需要首先切换到postgres用户再执行该命令:  </p>
+<blockquote>
+<p>su postgres  </p>
+</blockquote>
+<p>导出数据库到文件:  </p>
+<blockquote>
+<p>pg_dump database_name &gt; back.sql  </p>
+</blockquote>
+<p>卸载postgresql,如果是使用homebrew安装的话，就和简单了:  </p>
+<blockquote>
+<p>brew uninstall postgresql  </p>
+</blockquote>
+<p>如果是下载安装包安装的，有两种方法。<br />
+1. 自动卸载，在安装目录下，mac下是/Applications/Postgresql下有个uninstall-postgresql.app，双击执行就可以了。<br />
+2. 手动删除。  </p>
+<ul>
+<li>停止服务  </li>
+</ul>
+<blockquote>
+<p>sudo /sbin/SystemStarter stop postgresql-9.2  </p>
+</blockquote>
+<ul>
+<li>移除菜单图标   </li>
+</ul>
+<blockquote>
+<p>sudo rm -rf /Applications/PostgreSQL 9.2  </p>
+</blockquote>
+<ul>
+<li>移除ini文件  </li>
+</ul>
+<blockquote>
+<p>sudo rm -rf /etc/postgres-reg.ini  </p>
+</blockquote>
+<ul>
+<li>移除startup items  </li>
+</ul>
+<blockquote>
+<p>sudo rm -rf /Library/StartupItems/postgresql-9.2  </p>
+</blockquote>
+<ul>
+<li>移除数据和安装文件  </li>
+</ul>
+<blockquote>
+<p>sudo rm -rf /Library/PostgreSQL/9.2  </p>
+</blockquote>
+<ul>
+<li>移除postgres用户  </li>
+</ul>
+<blockquote>
+<p>sudo dscl . delete /users/postgres  </p>
+</blockquote>
+<p>PS: <br />
+可参考这两篇blog<br />
+1. http://nextmarvel.net/blog/2011/09/brew-install-postgresql-on-os-x-lion/<br />
+2. http://kidsreturn.org/2012/03/install-postgresql-on-mac-lion-via-homebrew/</p>
+            <a href="#" class="go-top">Go Top</a>
+    <div class="comments">
+        <div id="disqus_thread"></div>
+        <script type="text/javascript">
+            /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+            var disqus_shortname = "everlose"; // required: replace example with your forum shortname
+
+            /* * * DON'T EDIT BELOW THIS LINE * * */
+            (function() {
+                var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+                dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+                (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+            })();
+        </script>
+        <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+        <a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+    </div>
+<footer class="footer">
+    <p>&copy; 木头lbj &ndash;
+        Built with <a href="https://github.com/PurePelicanTheme/pure-single">Pure Theme</a>
+        for <a href="http://blog.getpelican.com/">Pelican</a>
+    </p>
+</footer>        </div>
+    </div>
+    </div>
+    <script>
+        var $top = $('.go-top');
+
+        // Show or hide the sticky footer button
+        $(window).scroll(function() {
+            if ($(this).scrollTop() > 200) {
+                $top.fadeIn(200);
+            } else {
+                $top.fadeOut(200);
+            }
+        });
+
+        // Animate the scroll to top
+        $top.click(function(event) {
+            event.preventDefault();
+            $('html, body').animate({scrollTop: 0}, 300);
+        })
+
+        // Makes sure that the href="#" attached to the <a> elements
+        // don't scroll you back up the page.
+        $('body').on('click', 'a[href="#"]', function(event) {
+            event.preventDefault();
+        });
+    </script>
+
+</body>
+</html>

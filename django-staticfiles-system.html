@@ -1,0 +1,567 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="EverLose, EverLose">
+
+
+        <title>Django中对静态文件的支持 // EverLose // EverLose</title>
+
+    <link href="./theme/images/icons/favicon.ico" rel="icon">
+
+    <link rel="stylesheet" href="http://yui.yahooapis.com/pure/0.5.0/pure-min.css">
+    <link rel="stylesheet" href="./theme/css/font-awesome.min.css">
+    <link rel="stylesheet" href="./theme/css/pure.css">
+    <!-- Custom style -->
+    <link rel="stylesheet" type="text/css" href="./theme/css/style.css">
+    <link rel="stylesheet" href="./theme/css/pygments.css">
+
+    <script src="./theme/js/jquery-2.1.1.min.js"></script>
+    <script src="./theme/js/jquery.fitvids.js"></script>
+    <script type="text/javascript">
+        $(document).ready(function(){
+            $(".content").fitVids();
+        });
+    </script>
+</head>
+
+<body>
+    <div class="pure-g-r" id="layout">
+        <div class="sidebar pure-u">
+            <div class="cover-img" style="background-image: url('http://everlose.qiniudn.com/sanqiao.jpg')">
+                <div class="cover-body">
+                    <header class="header">
+                        <hgroup>
+                            <h1 class="brand-main"><a href=".">EverLose</a></h1>
+                            <p class="tagline">EverLose</p>
+                                <p class="social">
+                                    <a href="http://weibo.com/mutoulbj">
+                                        <i class="fa fa-weibo fa-3x"></i>
+                                    </a>
+                                    <a href="http://github.com/mutoulbj">
+                                        <i class="fa fa-github fa-3x"></i>
+                                    </a>
+                                    <a href="http://twitter.com/mutoulbj">
+                                        <i class="fa fa-twitter fa-3x"></i>
+                                    </a>
+                                </p>
+                        </hgroup>
+                    </header>
+                </div>
+            </div>
+        </div>
+    <div class="pure-u">
+        <div class="content">
+            <section class="post">
+                <header class="post-header">
+                    <h1>Django中对静态文件的支持</h1>
+                        <p class="post-meta">
+                            <i class="fa fa-book"></i>                                 <a class="post-category" href="./tag/django.html">django</a>
+                        </p>
+                </header>
+            </section>
+            <p>原文地址:[http://agiliq.com/blog/2013/03/serving-static-files-in-django/]  </p>
+<p>处理静态文件，尤其是在开发时，是一件蛋疼的事情。在这篇文章中，我们将会讨论一些设置，目录结构和他们之间的相互影响。设置好<code>DEBUG = True</code>然后我们开始开发吧。  </p>
+<p>我们将会创建一个Django项目，这样可以让我们更好的了解我们讨论的这些这些文件在什么目录中。我们将会使用Django1.4，这些都也能在Django1.3中工作，因为没有在Django1.2下进行测试，所以对1.2版本下是否有问题不是很清楚。</p>
+<h2>创建项目</h2>
+<p>如果你不需要这部分，可以直接跳到<strong>处理静态文件</strong>这一节。只要保证你看过了这节底部的目录结构并对其有了解，这样你阅读后面的内容会更舒服。  </p>
+<p>我们将在命名为<strong>staticvirt</strong>的虚拟环境中做所有事情，所以我们需要命令  </p>
+<div class="highlight"><pre><span></span>~$ virtualenv staticvirt  
+</pre></div>
+
+
+<p>接下来我们需要在这个虚拟环境中创建一个Django项目。确保你进入了虚拟环境的目录，并且激活了该环境。同时也要保证在这个虚拟环境中安装了Django，因为我们不想污染系统的包环境。  </p>
+<div class="highlight"><pre><span></span>~$ <span class="nb">cd</span> staticvirt/  
+~/staticvirt$ <span class="nb">source</span> bin/activate  
+<span class="o">(</span>staticvirt<span class="o">)</span>~/staticvirt$ pip install <span class="nv">django</span><span class="o">==</span>1.4  
+</pre></div>
+
+
+<p>创建一个Django项目。  </p>
+<div class="highlight"><pre><span></span>django-admin.py startproject test_project  
+</pre></div>
+
+
+<p>进入项目所在系统。  </p>
+<div class="highlight"><pre><span></span><span class="nb">cd</span> test_project/  
+</pre></div>
+
+
+<p>让我们看看现在的目录结构。  </p>
+<div class="highlight"><pre><span></span><span class="o">(</span>staticvirt<span class="o">)</span>~/staticvirt/test_project$ tree  
+. 
+<span class="p">|</span>-- manage.py   
+*-- test_project   
+<span class="p">|</span>-- __init__.py 
+<span class="p">|</span>-- settings.py   
+<span class="p">|</span>-- urls.py   
+*-- wsgi.py    
+<span class="m">1</span> directory, <span class="m">5</span> files  
+</pre></div>
+
+
+<p>现在查看下<code>test_project/settings.py</code>的内容。搜索所有包括<strong>static</strong>的行，下面我列出所有包括static的行。  </p>
+<div class="highlight"><pre><span></span>STATIC_ROOT = &#39;&#39;   
+
+STATIC_URL = &#39;/static/&#39;  
+
+STATICFILES_DIRS = ()  
+
+STATICFILES_FINDERS = (  
+&#39;django.contrib.staticfiles.finders.FileSystemFinder&#39;,     
+&#39;django.contrib.staticfiles.finders.AppDirectoriesFinder&#39;,   
+&#39;django.contrib.staticfiles.finders.DefaultStorageFinder&#39;, 
+)   
+
+
+INSTALLED_APPS = (    
+....   
+....   
+&#39;django.contrib.staticfiles&#39;,   
+....   
+)  
+</pre></div>
+
+
+<p>然而，这里所看到的都是Django提供的默认设置，我们没有做任何的设置。  </p>
+<p>我们创建一个app，我们将会在里面创建一个<strong>template</strong>，然后会写一些静态文件，比如样式文件，然后在模板中使用这个样式文件。  </p>
+<div class="highlight"><pre><span></span>python manage.py startapp some_app  
+</pre></div>
+
+
+<p>将<code>some_app</code>添加进<code>test_project/settings.py</code>中的<code>INSTALLED_APPS</code>。  </p>
+<p>我们需要一个<code>urls.py</code>文件来为<code>some_app</code>定制路由。项目的urls.py应该包括<code>some_app</code>中的urls.py。所以，我们在<code>test_project/urls.py</code>中添加以下一行。  </p>
+<div class="highlight"><pre><span></span><span class="n">url</span><span class="p">(</span><span class="s1">r&#39;^some_app/&#39;</span><span class="p">,</span> <span class="n">include</span><span class="p">(</span><span class="s1">&#39;some_app.urls&#39;</span><span class="p">))</span>  
+</pre></div>
+
+
+<p>在<code>some_app</code>的urls.py文件中添加以下内容。  </p>
+<div class="highlight"><pre><span></span><span class="n">url</span><span class="p">(</span><span class="s1">r&#39;^home$&#39;</span><span class="p">,</span> <span class="n">direct_to_template</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;template&quot;</span><span class="p">:</span> <span class="s2">&quot;some_app/home.html&quot;</span><span class="p">})</span>  
+</pre></div>
+
+
+<p>创建一个名为<strong>templates</strong>的目录，然后将其添加进<code>TEMPLATE_DIRS</code>。我在manage.py同级目录下创建<strong>templates</strong>。  </p>
+<p>将<strong>templates</strong>添加进<code>TEMPLATE_DIRS</code>我需要做以下设定，如果你也使用跟我一样的目录结构，你也需要同样的设定。  </p>
+<div class="highlight"><pre><span></span><span class="n">PROJECT_DIR</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">__file__</span><span class="p">)</span>  
+
+<span class="n">TEMPLATE_DIRS</span> <span class="o">=</span> <span class="p">(</span>
+<span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">PROJECT_DIR</span><span class="p">,</span> <span class="s1">&#39;../templates&#39;</span><span class="p">),</span>  
+<span class="p">)</span>  
+</pre></div>
+
+
+<p>我们需要为<code>some_app</code>创建home.html文件，然后你需要进入<strong>templates</strong>目录。所以创建<strong>templates/come_app/home.html</strong>，在文件中写入以下内容。  </p>
+<div class="highlight"><pre><span></span><span class="p">&lt;</span><span class="nt">html</span><span class="p">&gt;</span>  
+<span class="p">&lt;</span><span class="nt">body</span><span class="p">&gt;</span>  
+<span class="p">&lt;</span><span class="nt">h1</span><span class="p">&gt;</span>This is home for some_app<span class="p">&lt;/</span><span class="nt">h1</span><span class="p">&gt;</span>   
+<span class="p">&lt;/</span><span class="nt">body</span><span class="p">&gt;</span>  
+<span class="p">&lt;/</span><span class="nt">html</span><span class="p">&gt;</span>  
+</pre></div>
+
+
+<p>现在查看一下项目的目录结构，便于消除一些不清楚的地方。   </p>
+<div class="highlight"><pre><span></span>~/staticvirt/test_project$ tree -I *.pyc 
+. 
+<span class="p">|</span>-- manage.py 
+<span class="p">|</span>-- some_app 
+<span class="p">|</span> <span class="p">|</span>-- __init__.py   
+<span class="p">|</span> <span class="p">|</span>-- models.py   
+<span class="p">|</span> <span class="p">|</span>-- tests.py   
+<span class="p">|</span> <span class="p">|</span>-- urls.py   
+<span class="p">|</span> *-- views.py      
+<span class="p">|</span>-- templates   
+<span class="p">|</span> *-- some_app   
+<span class="p">|</span> *-- home.html   
+*-- test_project   
+<span class="p">|</span>-- __init__.py   
+<span class="p">|</span>-- settings.py   
+<span class="p">|</span>-- urls.py   
+*-- wsgi.py    
+
+<span class="m">4</span> directories, <span class="m">11</span> files  
+</pre></div>
+
+
+<p>我们不想想是.pyc文件，所以将他们做了过滤。  </p>
+<p>启动服务。请确保你做好了你的数据库设定。  </p>
+<div class="highlight"><pre><span></span><span class="o">(</span>staticvirt<span class="o">)</span>~/staticvirt/test_project$ python manage.py runserver  
+</pre></div>
+
+
+<p>在浏览器中打开<code>http://127.0.0.1:8000/some_app/home</code>。从现在开始，我们称这个页面为some_app的home，你应该能够看到你刚写下的html的内容。  </p>
+<h2>处理静态文件</h2>
+<p>让我们编辑下<code>some_app</code>中的home.html文件，并且在其中添加样式，现在还不存在任何样式文件，我们将在编辑好home.html中的代码后添加。  </p>
+<div class="highlight"><pre><span></span><span class="p">&lt;</span><span class="nt">html</span><span class="p">&gt;</span>   
+<span class="p">&lt;</span><span class="nt">head</span><span class="p">&gt;</span>   
+<span class="p">&lt;</span><span class="nt">link</span> <span class="na">href</span><span class="o">=</span><span class="s">&quot;{{STATIC_URL}}styles.css&quot;</span> <span class="na">rel</span><span class="o">=</span><span class="s">&quot;stylesheet&quot;</span> <span class="na">type</span><span class="o">=</span><span class="s">&quot;text/css&quot;</span><span class="p">&gt;</span>   
+<span class="p">&lt;/</span><span class="nt">head</span><span class="p">&gt;</span>   
+<span class="p">&lt;</span><span class="nt">body</span><span class="p">&gt;</span>   
+<span class="p">&lt;</span><span class="nt">h1</span><span class="p">&gt;</span>This is home for some_app<span class="p">&lt;/</span><span class="nt">h1</span><span class="p">&gt;</span>   
+<span class="p">&lt;/</span><span class="nt">body</span><span class="p">&gt;</span>   
+<span class="p">&lt;/</span><span class="nt">html</span><span class="p">&gt;</span>  
+</pre></div>
+
+
+<p>刷新<code>some_app</code>的home页面。你将不会看到任何变化，因为我们还没有创建样式文件。  </p>
+<p>同样，访问<code>http://127.0.0.1/static/style.css</code>，你将会看到一个404页面。  </p>
+<p>现在开始创建样式文件。因为我们想要在<code>some_app</code>的template中使用这个样式，所以我们将在<code>some_app</code>的<strong>static/</strong>的子目录中创建。所以创建<code>some_app/static/style.css</code>，添加以下内容。  </p>
+<div class="highlight"><pre><span></span>body  
+{  
+background-color: red;  
+}  
+</pre></div>
+
+
+<p>再刷新<code>some_app</code>的home页面，你将会看到页面背景变成了红色。同样，访问<code>http://127.0.0.1/static/style.css</code>，你看到的不再是404页面，而是样式文件的内容。如果你看到这些变化，请确认你将<code>some_app</code>添加进了<code>INSTALLED_APPS</code>，并且重启了服务。  </p>
+<h3>需要注意的地方</h3>
+<ul>
+<li>我们没有对Django的默认静态文件设置做任何改变。我们完全保留了Django的settings.py中关于静态文件的设置。  </li>
+<li>在开发中，你不需要在urls.py中关于静态文件做任何改变，不需要添加<strong>staticfiles_urlpatterns()</strong>，我经常对此感到疑惑。  </li>
+<li>在开发中，你不需要执行<code>python manage.py collectstatic</code>。  </li>
+</ul>
+<h3>内部是怎么工作的</h3>
+<ul>
+<li>首先，检索settings.py中所有关于静态文件的设置。  </li>
+<li>他们是<code>STATIC_URL, STATIC_ROOT, STATICFILES_FINDERS, STATICFILES_DIRS</code>。  </li>
+<li>同样我们已经将<strong>'django.contrib.staticfiles'</strong>添加进了<code>INSTALLED_APPS</code>。  </li>
+<li>现在先不管<code>STATIC_ROOT</code>和<code>STATICFILES_DIRS</code>。即使你将他们注释或者删除，你的项目依然能够像现在一样工作。   </li>
+<li>我们需要将<strong>'django.contrib.staticfiles'</strong>添加进<code>INSTALLED_APPS</code>，如果我们想要使用Django默认的静态文件处理服务。  </li>
+<li>所谓的Django默认的静态文件处理服务就相当于需要使用Django提供的<code>python manage.py runserver</code>。  </li>
+<li>Django默认会在<code>STATIC_URL</code>下处理静态文件。注意<code>STATIC_URL</code>已经设置为<strong>'/static/'</strong>。这就是为什么我们获取到了我们的静态文件，举个例子，样式文件在这个url下<code>http://127.0.0.1:8000/static/styles.css</code>。<br />
+如果你访问<code>http://127.0.0.1:8000/static_changed/styles.css</code>，你将会得到一个404页面。如果你想要在<code>http://127.0.0.1:8000/static_changed/styles.css</code>提供，需要设置<code>STATIC_URL = '/static_changed/'</code>。现在动手试试吧。这只是为了举例说明STATIC_URL的用处，现在都改回默认设置，即<code>STATIC_URL = '/static/'</code>。  </li>
+<li>下一个问题是，Django是怎么知道从哪里去读取静态文件的，或者说怎么知道去哪里找到静态文件呢？这就是<code>STATICFILES_FINDERS</code>的作用了。<br />
+在<code>STATICFILES_FINDERS</code>中我们有两条记录:  </li>
+</ul>
+<div class="highlight"><pre><span></span><span class="s1">&#39;django.contrib.staticfiles.finders.FileSystemFinder&#39;</span><span class="p">,</span>  
+<span class="s1">&#39;django.contrib.staticfiles.finders.AppDirectoriesFinder&#39;</span>  
+</pre></div>
+
+
+<p>现在你可以先不管FileSystemFinder，如果你愿意，你可以先注释掉这一行。AppDirectoriesFinder告诉Django从<code>INSTALLED_APPS</code>中每一个app下的static/ 子目录下去寻找静态文件。记住，我们是将style.css放在了<code>some_app</code>中static/子目录下，这就是为什么Django能够找到它，并且进行正确的处理。如果你将'static/'子目录修改为其他名字，你的静态文件就不能被正确处理了。动手试一试吧。注释掉<strong>AppDirectoriesFinder</strong>这一行，然后访问<code>http://127.0.0.1:8000/static/styles.css</code>，现在样式文件不能被正确地处理了。好，尝试过后去掉注释。  </p>
+<p>现在，我们知道了<code>STATIC_URL</code>和<code>STATICFILES_FINDERS</code>的作用。我们现在仍然不需要用到<code>STATIC__ROOT</code>和<code>STATICFILES_DIRS</code>。  </p>
+<p>为了了解一些其他的事情关于静态文件的处理，我们需要另一个app。  </p>
+<p>创建一个。  </p>
+<div class="highlight"><pre><span></span>python manage.py startapp other_app  
+</pre></div>
+
+
+<p>修改项目的urls.py，将<code>other_app</code>包括进去。现在项目的urls.py包括两行。  </p>
+<div class="highlight"><pre><span></span><span class="n">url</span><span class="p">(</span><span class="s1">r&#39;^some_app/&#39;</span><span class="p">,</span> <span class="n">include</span><span class="p">(</span><span class="s1">&#39;some_app.urls&#39;</span><span class="p">)),</span>   
+<span class="n">url</span><span class="p">(</span><span class="s1">r&#39;^other_app/&#39;</span><span class="p">,</span> <span class="n">include</span><span class="p">(</span><span class="s1">&#39;other_app.urls&#39;</span><span class="p">)),</span>  
+</pre></div>
+
+
+<p>我们需要在<code>other_app</code>的urls.py中添加几行，比如，在<code>other_app/urls.py</code>中:  </p>
+<div class="highlight"><pre><span></span><span class="n">url</span><span class="p">(</span><span class="s1">r&#39;^home$&#39;</span><span class="p">,</span> <span class="n">direct_to_template</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;template&quot;</span><span class="p">:</span> <span class="s2">&quot;other_app/home.html&quot;</span><span class="p">})</span>  
+</pre></div>
+
+
+<p>现在在templates目录下创建<code>other_app/home.html</code>。  </p>
+<div class="highlight"><pre><span></span><span class="p">&lt;</span><span class="nt">html</span><span class="p">&gt;</span>   
+<span class="p">&lt;</span><span class="nt">body</span><span class="p">&gt;</span>   
+<span class="p">&lt;</span><span class="nt">h1</span><span class="p">&gt;</span>This is home for other_app<span class="p">&lt;/</span><span class="nt">h1</span><span class="p">&gt;</span>    
+<span class="p">&lt;/</span><span class="nt">body</span><span class="p">&gt;</span>   
+<span class="p">&lt;/</span><span class="nt">html</span><span class="p">&gt;</span>  
+</pre></div>
+
+
+<p>查看一下现在的目录结构。  </p>
+<div class="highlight"><pre><span></span>~/staticvirt/test_project$ tree -I *.pyc 
+. 
+<span class="p">|</span>-- manage.py  
+<span class="p">|</span>-- other_app  
+<span class="p">|</span> <span class="p">|</span>-- __init__.py  
+<span class="p">|</span> <span class="p">|</span>-- models.py  
+<span class="p">|</span> <span class="p">|</span>-- tests.py  
+<span class="p">|</span> <span class="p">|</span>-- urls.py  
+<span class="p">|</span> *-- views.py  
+<span class="p">|</span>-- some_app  
+<span class="p">|</span> <span class="p">|</span>-- __init__.py  
+<span class="p">|</span> <span class="p">|</span>-- models.py  
+<span class="p">|</span> <span class="p">|</span>-- static  
+<span class="p">|</span> <span class="p">|</span> *-- styles.css  
+<span class="p">|</span> <span class="p">|</span>-- tests.py  
+<span class="p">|</span> <span class="p">|</span>-- urls.py  
+<span class="p">|</span> *-- views.py  
+<span class="p">|</span>-- templates  
+<span class="p">|</span> <span class="p">|</span>-- other_app  
+<span class="p">|</span> <span class="p">|</span> *-- home.html  
+<span class="p">|</span> *-- some_app   
+<span class="p">|</span> *-- home.html  
+*-- test_project  
+<span class="p">|</span>-- __init__.py   
+<span class="p">|</span>-- settings.py   
+<span class="p">|</span>-- urls.py  
+*-- wsgi.py  
+</pre></div>
+
+
+<p>将<code>other_app</code>添加进<code>INSTALLED_APPS</code>。  </p>
+<p>现在访问url:<code>http://127.0.0.1:8000/other_app/home</code>。  </p>
+<p>为other_app的home页面添加样式。假设我们想让它的背景颜色为蓝色，我们创建<code>other_app/static/other_style.css</code>  </p>
+<div class="highlight"><pre><span></span>body{  
+background-color: blue;  
+}  
+</pre></div>
+
+
+<p>将样式文件添加进other_app的home页面的模板中，将<code>templates/other_app/home.html</code>改为:  </p>
+<div class="highlight"><pre><span></span><span class="p">&lt;</span><span class="nt">html</span><span class="p">&gt;</span>  
+<span class="p">&lt;</span><span class="nt">head</span><span class="p">&gt;</span>  
+<span class="p">&lt;</span><span class="nt">link</span> <span class="na">href</span><span class="o">=</span><span class="s">&quot;{{STATIC_URL}}other_style.css&quot;</span> <span class="na">rel</span><span class="o">=</span><span class="s">&quot;stylesheet&quot;</span> <span class="na">type</span><span class="o">=</span><span class="s">&quot;text/css&quot;</span><span class="p">&gt;</span>  
+<span class="p">&lt;/</span><span class="nt">head</span><span class="p">&gt;</span>  
+<span class="p">&lt;</span><span class="nt">body</span><span class="p">&gt;</span>  
+<span class="p">&lt;</span><span class="nt">h1</span><span class="p">&gt;</span>This is home for other_app<span class="p">&lt;/</span><span class="nt">h1</span><span class="p">&gt;</span>  
+<span class="p">&lt;/</span><span class="nt">body</span><span class="p">&gt;</span>  
+<span class="p">&lt;/</span><span class="nt">html</span><span class="p">&gt;</span>  
+</pre></div>
+
+
+<p>刷新<code>http://127.0.0.1:8000/other_app/home</code>，你将会看到蓝色背景。你也许需要重启服务才能看到变化。同样，我们能够在<code>http://127.0.0.1:8000/static/other_style.css</code>中看到样式文件的内容。  </p>
+<p>同时，访问<code>http://127.0.0.1:8000/some_app/home</code>，验证下some_app的home页面依然是红色背景。  </p>
+<h3>这里发生了什么</h3>
+<p>当我们发起一个<code>/static/other_style.css</code>的请求，Django知道<code>STATIC_URL</code>设置为'/static/'，这跟url提供的第一个部分相匹配，因此它推断我们想要将其作为静态文件处理，所以它进入所有app的static/子目录中进行查找，因为<code>STATICFILES_FINDERS</code>包含了<strong>'django.contrib.staticfiles.finders.AppDirectoriesFinder'</strong>。当它在<code>other_app</code>中的static/目录下找到一个名为<code>other_style.css</code>的文件，就对它进行处理。  </p>
+<p>然而，这带来了另一个问题，你一定注意到了我们将<code>other_app</code>中的样式文件命名为<code>other_style.css</code>。如果我们想要它的名称也为style.css会发生什么呢？试试看。  </p>
+<div class="highlight"><pre><span></span>mv other_app/static/other_style.css other_app/static/styles.css  
+</pre></div>
+
+
+<p>同时，我们需要修改other_app的home文件来引入这个样式文件。我们必须做这个，因为我们将<code>other_style.css</code>改名为了style.css。<code>other_app</code>的home文件修改如下:  </p>
+<div class="highlight"><pre><span></span><span class="p">&lt;</span><span class="nt">html</span><span class="p">&gt;</span>  
+<span class="p">&lt;</span><span class="nt">head</span><span class="p">&gt;</span>  
+<span class="p">&lt;</span><span class="nt">link</span> <span class="na">href</span><span class="o">=</span><span class="s">&quot;{{STATIC_URL}}styles.css&quot;</span> <span class="na">rel</span><span class="o">=</span><span class="s">&quot;stylesheet&quot;</span> <span class="na">type</span><span class="o">=</span><span class="s">&quot;text/css&quot;</span><span class="p">&gt;</span>  
+<span class="p">&lt;/</span><span class="nt">head</span><span class="p">&gt;</span>  
+<span class="p">&lt;</span><span class="nt">body</span><span class="p">&gt;</span>  
+<span class="p">&lt;</span><span class="nt">h1</span><span class="p">&gt;</span>This is home for other_app<span class="p">&lt;/</span><span class="nt">h1</span><span class="p">&gt;</span>  
+<span class="p">&lt;/</span><span class="nt">body</span><span class="p">&gt;</span>  
+<span class="p">&lt;/</span><span class="nt">html</span><span class="p">&gt;</span>  
+</pre></div>
+
+
+<p>现在查看两个我们创建的页面。  </p>
+<div class="highlight"><pre><span></span>http://127.0.0.1:8000/some_app/home  
+http://127.0.0.1:8000/other_app/home  
+</pre></div>
+
+
+<p>你会发现现在两个页面的背景都变成了红色。这依赖于<strong>INSTALLED_APPS</strong>中app的排列顺序。如果<code>some_app</code>在<code>other_app</code>的前面，两个页面都会是红色背景。如果<code>other_app</code>在<code>some_app</code>的前面，那么两个页面背景都是蓝色。在我的设置中，<code>some_app</code>在<code>other_app</code>之前，所以背景都是红色的。  </p>
+<h3>为什么这会发生</h3>
+<p>两个页面都想引用一个名为style.css的静态文件。Django尝试在<strong>INSTALLED_APPS</strong>中列出的所有app中的static/子目录下寻找这个文件。一旦它在<code>some_app</code>的static/子目录中找到了，就会进行处理并且不再继续在<code>other_app</code>中进行寻找。因此，<code>some_app</code>中static/子目录下将背景设置为红色，那么两个页面都被设置为红色背景了。  </p>
+<h3>怎么避免</h3>
+<p>那么，如果我们想在两个app中样式文件都叫做style.css怎么做？这时候，我们需要在没一个app下的static/目录下增加一层目录，将其命名为各自app的名称。像下面这么做:  </p>
+<div class="highlight"><pre><span></span>mkdir some_app/static/some_app   
+mv some_app/static/styles.css some_app/static/some_app    
+mkdir other_app/static/other_app   
+mv other_app/static/styles.css other_app/static/other_app/   
+</pre></div>
+
+
+<p>我们在每一个app下的static/子目录下创建一个与各自app相同的目录。然后将样式文件移到这个目录下。  </p>
+<p>同理，也需要修改各自的模板文件。  </p>
+<p>修改<code>templates/some_app/home.html</code>中的stylesheet路径，新的内容如下:  </p>
+<div class="highlight"><pre><span></span><span class="p">&lt;</span><span class="nt">html</span><span class="p">&gt;</span>  
+<span class="p">&lt;</span><span class="nt">head</span><span class="p">&gt;</span>   
+<span class="p">&lt;</span><span class="nt">link</span> <span class="na">href</span><span class="o">=</span><span class="s">&quot;{{STATIC_URL}}some_app/styles.css&quot;</span> <span class="na">rel</span><span class="o">=</span><span class="s">&quot;stylesheet&quot;</span> <span class="na">type</span><span class="o">=</span><span class="s">&quot;text/css&quot;</span><span class="p">&gt;</span>     <span class="p">&lt;/</span><span class="nt">head</span><span class="p">&gt;</span>   
+<span class="p">&lt;</span><span class="nt">body</span><span class="p">&gt;</span>   
+<span class="p">&lt;</span><span class="nt">h1</span><span class="p">&gt;</span>This is home for some_app<span class="p">&lt;/</span><span class="nt">h1</span><span class="p">&gt;</span>   
+<span class="p">&lt;/</span><span class="nt">body</span><span class="p">&gt;</span>   
+<span class="p">&lt;/</span><span class="nt">html</span><span class="p">&gt;</span>  
+</pre></div>
+
+
+<p>对<code>templates/other_app/home.html</code>做相似的改动。  </p>
+<div class="highlight"><pre><span></span><span class="nt">&lt;html&gt;</span>   
+<span class="nt">&lt;head&gt;</span>   
+<span class="nt">&lt;link</span> <span class="na">href=</span><span class="s">&quot;</span><span class="cp">{{</span><span class="nv">STATIC_URL</span><span class="cp">}}</span><span class="s">other_app/styles.css&quot;</span> <span class="na">rel=</span><span class="s">&quot;stylesheet&quot;</span> <span class="na">type=</span><span class="s">&quot;text/css&quot;</span><span class="nt">&gt;</span>   
+<span class="nt">&lt;/head&gt;</span>   
+<span class="nt">&lt;body&gt;</span>   
+<span class="nt">&lt;h1&gt;</span>This is home for other_app<span class="nt">&lt;/h1&gt;</span>   
+<span class="nt">&lt;/body&gt;</span>   
+<span class="nt">&lt;/html&gt;</span>   
+</pre></div>
+
+
+<p>现在再次查看两个页面。  </p>
+<div class="highlight"><pre><span></span>http://127.0.0.1:8000/some_app/home  
+http://127.0.0.1:8000/other_app/home  
+</pre></div>
+
+
+<p>你将会发现一个背景是红色，另一个是蓝色。  </p>
+<h3>这里发生了什么</h3>
+<ul>
+<li><code>some_app</code>的模板需要引用<code>http://127.0.0.1:8000/static/some_app/styles.css</code>。  </li>
+<li>Django发现这个url以'/static/'开头，这跟<code>STATIC_URL</code>匹配，推测这需要处理静态文件<strong>some_app/style.css</strong>。  </li>
+<li>它开始在所有app的static/子目录中寻找文件<code>some_app/style.css</code>。  </li>
+<li>它最终在<code>some_app</code>的static/子目录中找到了它，并进行处理。  </li>
+<li><code>other_app</code>的模板需要引用<code>http://127.0.0.1:8000/static/other_app/styles.css</code>。  </li>
+<li>Django开始在所有app的static/子目录中寻找文件<code>other_app/style.css</code>。  </li>
+<li>它最终在<code>other_app</code>的static/子目录中找到了它，并进行处理。  </li>
+</ul>
+<p>希望你现在对于<strong>STATIC_URL</strong>, <strong>STATICFILES_FINDERS</strong>和静态文件是怎么处理的更加清楚了。  </p>
+<h2>关于STATICFILES_DIRS</h2>
+<p>到现在我们假定我们在<code>some_app</code>和<code>other_app</code>是需要各自独立的静态文件，所以我们为他们写了不同样式文件。  </p>
+<p>假定我们项目中一些样式需要保持一致，没一个app都没有特殊。这也的话，我们不需要将这些样式文件放进任何一个app的static/子目录中。我们在manage.py的同级目录中创建一个目录，然后将项目共同的静态资源放在这个目录中。  </p>
+<p>然我们看看是怎么做的。  </p>
+<p>在manage.py的同一级下创建一个名为<strong>project_static</strong>的目录。  </p>
+<div class="highlight"><pre><span></span>mkdir project_static  
+</pre></div>
+
+
+<p>创建一个名为base.css的文件，放进去。  </p>
+<div class="highlight"><pre><span></span>touch project_static/base.css  
+</pre></div>
+
+
+<p>编辑这个页面，包含以下内容:  </p>
+<div class="highlight"><pre><span></span>h1  
+{  
+font-style: italic;  
+}  
+</pre></div>
+
+
+<p>我们想让项目中所有h1标签中的内容斜体显示。  </p>
+<p>Django现在还不知道这个文件，也不知道怎么进行处理。要让Django知道它，需要将包含这个文件的目录添加进<strong>STATICFILES_DIRS</strong>。所以编辑<code>test_project/settings.py</code>,将需要的目录添加进STATICFILES_DIRS。  </p>
+<div class="highlight"><pre><span></span><span class="n">STATICFILES_DIRS</span> <span class="o">=</span> <span class="p">(</span>  
+<span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">PROJECT_DIR</span><span class="p">,</span> <span class="s1">&#39;../project_static&#39;</span><span class="p">),</span>  
+<span class="p">)</span>  
+</pre></div>
+
+
+<p>试着访问<code>http://127.0.0.1:8000/static/base.css</code>，你应该能看到刚才写的样式。请确保在<code>STATICFILES_FINDERS</code>中你设置了:  </p>
+<div class="highlight"><pre><span></span>&#39;django.contrib.staticfiles.finders.FileSystemFinder&#39;   
+</pre></div>
+
+
+<p>否则你将得到一个404页面。  </p>
+<h2>这里发生了什么</h2>
+<ul>
+<li>Django服务器收到一个关于静态文件的请求，因为是一个以'/static/'开头的url。  </li>
+<li>它开始在<code>STATICFILES_DIRS</code>设定的所有目录中寻找这个静态文件，比如base.css。  </li>
+<li>由于我们在<code>STATICFILES_DIRS</code>中指定了一个目录，即<code>project_static</code>，Django服务器在这个目录中尝试寻找这个文件。它在这个目录中进行搜索时找到了这个文件，然后进行处理。  </li>
+<li>如果没有在<code>STATICFILES_DIRS</code>指定的目录中找到这个文件，它将会在<code>INSTALLED_APPS</code>下所有app的static/子目录尝试寻找。  </li>
+<li>注意，这时候依然没有不需要添加<code>staticfiles_urlpatterns()</code>。  </li>
+</ul>
+<p>为了在模板中使用这个文件，我们需要引用这个样式。在所有模板中添加进下面这行。  </p>
+<div class="highlight"><pre><span></span><span class="p">&lt;</span><span class="nt">link</span> <span class="na">href</span><span class="o">=</span><span class="s">&quot;{{STATIC_URL}}base.css&quot;</span> <span class="na">rel</span><span class="o">=</span><span class="s">&quot;stylesheet&quot;</span> <span class="na">type</span><span class="o">=</span><span class="s">&quot;text/css&quot;</span><span class="p">&gt;</span>  
+</pre></div>
+
+
+<p>刷新两个页面的url，你将会看到这些页面中h1标签中的字体都为斜体。  </p>
+<p>让我们查看最终的目录结构，如果你有什么问题可以有帮助。   </p>
+<div class="highlight"><pre><span></span><span class="o">(</span>staticvirt<span class="o">)</span>~/staticvirt/test_project$ tree -I *.pyc   
+.      
+<span class="p">|</span>-- manage.py     
+<span class="p">|</span>-- other_app     
+<span class="p">|</span> <span class="p">|</span>-- __init__.py     
+<span class="p">|</span> <span class="p">|</span>-- models.py     
+<span class="p">|</span> <span class="p">|</span>-- static     
+<span class="p">|</span> <span class="p">|</span> *-- other_app     
+<span class="p">|</span> <span class="p">|</span> *-- styles.css     
+<span class="p">|</span> <span class="p">|</span>-- tests.py     
+<span class="p">|</span> <span class="p">|</span>-- urls.py     
+<span class="p">|</span> *-- views.py     
+<span class="p">|</span>-- project_static     
+<span class="p">|</span> *-- base.css     
+<span class="p">|</span>-- some_app     
+<span class="p">|</span> <span class="p">|</span>-- __init__.py     
+<span class="p">|</span> <span class="p">|</span>-- models.py     
+<span class="p">|</span> <span class="p">|</span>-- static     
+<span class="p">|</span> <span class="p">|</span> *-- some_app     
+<span class="p">|</span> <span class="p">|</span> *-- styles.css     
+<span class="p">|</span> <span class="p">|</span>-- tests.py     
+<span class="p">|</span> <span class="p">|</span>-- urls.py       
+<span class="p">|</span> *-- views.py     
+<span class="p">|</span>-- templates     
+<span class="p">|</span> <span class="p">|</span>-- other_app     
+<span class="p">|</span> <span class="p">|</span> *-- home.html     
+<span class="p">|</span> *-- some_app     
+<span class="p">|</span> *-- home.html     
+*-- test_project     
+<span class="p">|</span>-- __init__.py     
+<span class="p">|</span>-- settings.py     
+<span class="p">|</span>-- urls.py     
+*-- wsgi.py     
+
+<span class="m">11</span> directories, <span class="m">20</span> files  
+</pre></div>
+
+
+<h2>关于STATIC_ROOT</h2>
+<ul>
+<li>如果在开发阶段你使用Django的runserver，你将永远不会需要STATIC_ROOT。  </li>
+<li>一旦你需要进入生产，你能在服务器中使用它。Django提供了一个静态文件管理的命令叫做<strong>collectstatic</strong>，它将收集所有的静态资源，（如在<code>STATICFILES_DIRS</code>中找到的和在所有app下的static/子目录中找到的静态资源），将它们放进一个<code>STATIC_ROOT</code>定义的位置。  </li>
+<li>STATIC_ROOT只有在你使用collectstatic命令的时候才会有用处。  </li>
+</ul>
+<p>让我们验证一下，创建一个名为<code>static_resources</code>的目录.  </p>
+<div class="highlight"><pre><span></span>mkdir static_resources  
+</pre></div>
+
+
+<p>修改settings.py，添加以下几行.  </p>
+<div class="highlight"><pre><span></span><span class="n">STATIC_ROOT</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">PROJECT_DIR</span><span class="p">,</span> <span class="s1">&#39;../static_resources&#39;</span><span class="p">)</span>  
+</pre></div>
+
+
+<p>现在运行命令：  </p>
+<div class="highlight"><pre><span></span>python manage.py collectstatic  
+</pre></div>
+
+
+<p>它会请求你确认，输入'yes'，然后你将会看见所有的静态资源被收集进一个你在<code>STATIC_ROOT</code>定义的目录中。  </p>
+<p>然后在生产服务器中你可以设置所有的静态文件请求都进入<code>STATIC_ROOT</code>定义的目录中进行查找。  </p>
+<p>再说一次，关于<code>STATIC_ROOT</code>的部分只是附带着说说。在开发阶段你都不需要用到它。</p>
+            <a href="#" class="go-top">Go Top</a>
+    <div class="comments">
+        <div id="disqus_thread"></div>
+        <script type="text/javascript">
+            /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+            var disqus_shortname = "everlose"; // required: replace example with your forum shortname
+
+            /* * * DON'T EDIT BELOW THIS LINE * * */
+            (function() {
+                var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+                dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+                (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+            })();
+        </script>
+        <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+        <a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+    </div>
+<footer class="footer">
+    <p>&copy; 木头lbj &ndash;
+        Built with <a href="https://github.com/PurePelicanTheme/pure-single">Pure Theme</a>
+        for <a href="http://blog.getpelican.com/">Pelican</a>
+    </p>
+</footer>        </div>
+    </div>
+    </div>
+    <script>
+        var $top = $('.go-top');
+
+        // Show or hide the sticky footer button
+        $(window).scroll(function() {
+            if ($(this).scrollTop() > 200) {
+                $top.fadeIn(200);
+            } else {
+                $top.fadeOut(200);
+            }
+        });
+
+        // Animate the scroll to top
+        $top.click(function(event) {
+            event.preventDefault();
+            $('html, body').animate({scrollTop: 0}, 300);
+        })
+
+        // Makes sure that the href="#" attached to the <a> elements
+        // don't scroll you back up the page.
+        $('body').on('click', 'a[href="#"]', function(event) {
+            event.preventDefault();
+        });
+    </script>
+
+</body>
+</html>
