@@ -1,5 +1,266 @@
 <?xml version="1.0" encoding="utf-8"?>
-<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>EverLose</title><link>http://blog.everlose.com/</link><description></description><atom:link href="http://blog.everlose.com/feeds/mu-tou-lbj.rss.xml" rel="self"></atom:link><lastBuildDate>Wed, 13 Apr 2016 00:00:00 +0800</lastBuildDate><item><title>RESUME</title><link>http://blog.everlose.com/resume.html</link><description>&lt;p&gt;2012年大三末期走上『码农』之路，立志将技术路线走到底，直到现在未曾改变。也一直在寻找有技术追求，有挑战，有意思的公司，为互联网做出自己的贡献。  &lt;/p&gt;
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>EverLose</title><link>http://blog.everlose.com/</link><description></description><atom:link href="http://blog.everlose.com/feeds/mu-tou-lbj.rss.xml" rel="self"></atom:link><lastBuildDate>Wed, 28 Sep 2016 00:00:00 +0800</lastBuildDate><item><title>CentOS上部署Django</title><link>http://blog.everlose.com/deploy-django-on-centos.html</link><description>&lt;h3&gt;搭建Python环境&lt;/h3&gt;
+&lt;p&gt;一般云服务（如阿里云）的CentOS系统默认的Python版本较低，还停留在2.6。如果是这样，首先需要搭建较高版本的Python环境。具体可以参见之前翻译的博文&lt;a href="http://blog.everlose.com/set-up-python-on-centos.html"&gt;在CentOS 6.4上设置Python2.7.6和3.3.3环境&lt;/a&gt;。  &lt;/p&gt;
+&lt;p&gt;依次执行以下命令：  &lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;yum install -y update  &lt;span class="c1"&gt;# 更新内置程序&lt;/span&gt;
+yum groupinstall -y development  &lt;span class="c1"&gt;# 安装所需的development tools&lt;/span&gt;
+yum install -y zlib-dev openssl-devel sqlite-devel bzip2-devel  &lt;span class="c1"&gt;# 安装附加包  &lt;/span&gt;
+yum install xz-libs  &lt;span class="c1"&gt;# 安装XZ解压库(可选)&lt;/span&gt;
+
+wget http://www.python.org/ftp/python/2.7.6/Python-2.7.6.tar.xz  &lt;span class="c1"&gt;# 下载源码包 &lt;/span&gt;
+
+&lt;span class="c1"&gt;# 解压源码包,分为两步  &lt;/span&gt;
+xz -d Python-2.7.6.tar.xz  
+tar -xvf Python-2.7.6.tar  
+
+&lt;span class="c1"&gt;# 编译与安装,先进入源码目录  &lt;/span&gt;
+&lt;span class="nb"&gt;cd&lt;/span&gt; Python-2.7.6  
+./configure --prefix&lt;span class="o"&gt;=&lt;/span&gt;/usr/local  
+make  
+make altinstall  
+
+&lt;span class="c1"&gt;# 配置virtualenv虚拟环境  &lt;/span&gt;
+wget --no-check-certificate https://pypi.python.org/packages/source/s/setuptools/setuptools-1.4.2.tar.gz  
+tar -xvf setuptools-1.4.2.tar.gz  
+&lt;span class="nb"&gt;cd&lt;/span&gt; setuptools-1.4.2  
+python2.7 setup.py install  
+curl https://raw.githubusercontent.com/pypa/pip/master/contrib/get-pip.py &lt;span class="p"&gt;|&lt;/span&gt; python2.7 -  
+pip install virtualenv  
+
+&lt;span class="c1"&gt;# 创建项目所需的虚拟环境venv  &lt;/span&gt;
+virtualenv venv --python&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="sb"&gt;`&lt;/span&gt;which python2.7&lt;span class="sb"&gt;`&lt;/span&gt;
+
+&lt;span class="c1"&gt;# 修改.bashrc,在该系统用户登录之后自动激活虚拟环境。&lt;/span&gt;
+&lt;span class="c1"&gt;# 在.bashrc下增加以下命令    &lt;/span&gt;
+&lt;span class="nb"&gt;source&lt;/span&gt; ~/venv/bin/activate  
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h3&gt;安装数据库MySQL&lt;/h3&gt;
+&lt;p&gt;使用yum源直接安装的版本较低，一般需要安装较高版本（5.5及以上）。&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="c1"&gt;# 添加yum源  &lt;/span&gt;
+&lt;span class="c1"&gt;## Remi Dependency on CentOS 5 and Red Hat (RHEL) 5 ##&lt;/span&gt;
+rpm -Uvh http://dl.fedoraproject.org/pub/epel/5/i386/epel-release-5-4.noarch.rpm
+
+&lt;span class="c1"&gt;## CentOS 5 and Red Hat (RHEL) 5 ## &lt;/span&gt;
+rpm -Uvh http://rpms.famillecollet.com/enterprise/remi-release-5.rpm
+
+rpm -Uvh http://dl.fedoraproject.org/pub/epel/6/i386/epel-release-6-8.noarch.rpm
+rpm -Uvh http://rpms.famillecollet.com/enterprise/remi-release-6.rpm  
+
+&lt;span class="c1"&gt;# 检查可用的MySQL版本  &lt;/span&gt;
+yum --enablerepo&lt;span class="o"&gt;=&lt;/span&gt;remi,remi-test list mysql mysql-devel mysql-server  
+
+&lt;span class="c1"&gt;# 安装MySQL  &lt;/span&gt;
+yum --enablerepo&lt;span class="o"&gt;=&lt;/span&gt;remi,remi-test install mysql mysql-server  
+
+&lt;span class="c1"&gt;# 修改/etc/my.conf,修改或者添加以下配置,支持unicode全字符(即支持emoji)&lt;/span&gt;
+&lt;span class="o"&gt;[&lt;/span&gt;client&lt;span class="o"&gt;]&lt;/span&gt;
+default-character-set &lt;span class="o"&gt;=&lt;/span&gt; utf8mb4
+&lt;span class="o"&gt;[&lt;/span&gt;mysqld&lt;span class="o"&gt;]&lt;/span&gt;
+character-set-server &lt;span class="o"&gt;=&lt;/span&gt; utf8mb4
+collation-server &lt;span class="o"&gt;=&lt;/span&gt; utf8mb4_unicode_ci
+default-storage-engine &lt;span class="o"&gt;=&lt;/span&gt; INNODB
+
+&lt;span class="c1"&gt;# 启动MySQL  &lt;/span&gt;
+service mysqld start  
+
+&lt;span class="c1"&gt;# 检查配置是否正确&lt;/span&gt;
+mysql -u root -p   &lt;span class="c1"&gt;# 回车，不需要输入密码，此时还未设置root密码&lt;/span&gt;
+mysql&amp;gt; SHOW VARIABLES WHERE Variable_name LIKE &lt;span class="s1"&gt;&amp;#39;character\_set\_%&amp;#39;&lt;/span&gt; OR Variable_name LIKE &lt;span class="s1"&gt;&amp;#39;collation%&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;  
+
+&lt;span class="c1"&gt;# 如果看到以下结果说明配置正确  &lt;/span&gt;
++--------------------------+--------------------+
+&lt;span class="p"&gt;|&lt;/span&gt; Variable_name            &lt;span class="p"&gt;|&lt;/span&gt; Value              &lt;span class="p"&gt;|&lt;/span&gt;
++--------------------------+--------------------+
+&lt;span class="p"&gt;|&lt;/span&gt; character_set_client     &lt;span class="p"&gt;|&lt;/span&gt; utf8mb4            &lt;span class="p"&gt;|&lt;/span&gt;
+&lt;span class="p"&gt;|&lt;/span&gt; character_set_connection &lt;span class="p"&gt;|&lt;/span&gt; utf8mb4            &lt;span class="p"&gt;|&lt;/span&gt;
+&lt;span class="p"&gt;|&lt;/span&gt; character_set_database   &lt;span class="p"&gt;|&lt;/span&gt; utf8mb4            &lt;span class="p"&gt;|&lt;/span&gt;
+&lt;span class="p"&gt;|&lt;/span&gt; character_set_filesystem &lt;span class="p"&gt;|&lt;/span&gt; binary             &lt;span class="p"&gt;|&lt;/span&gt;
+&lt;span class="p"&gt;|&lt;/span&gt; character_set_results    &lt;span class="p"&gt;|&lt;/span&gt; utf8mb4            &lt;span class="p"&gt;|&lt;/span&gt;
+&lt;span class="p"&gt;|&lt;/span&gt; character_set_server     &lt;span class="p"&gt;|&lt;/span&gt; utf8mb4            &lt;span class="p"&gt;|&lt;/span&gt;
+&lt;span class="p"&gt;|&lt;/span&gt; character_set_system     &lt;span class="p"&gt;|&lt;/span&gt; utf8               &lt;span class="p"&gt;|&lt;/span&gt;
+&lt;span class="p"&gt;|&lt;/span&gt; collation_connection     &lt;span class="p"&gt;|&lt;/span&gt; utf8mb4_general_ci &lt;span class="p"&gt;|&lt;/span&gt;
+&lt;span class="p"&gt;|&lt;/span&gt; collation_database       &lt;span class="p"&gt;|&lt;/span&gt; utf8mb4_unicode_ci &lt;span class="p"&gt;|&lt;/span&gt;
+&lt;span class="p"&gt;|&lt;/span&gt; collation_server         &lt;span class="p"&gt;|&lt;/span&gt; utf8mb4_unicode_ci &lt;span class="p"&gt;|&lt;/span&gt;
++--------------------------+--------------------+
+
+&lt;span class="c1"&gt;# 查看用户信息  &lt;/span&gt;
+mysql&amp;gt; SELECT user,host,password FROM mysql.user&lt;span class="p"&gt;;&lt;/span&gt;
++------+--------------+----------+
+&lt;span class="p"&gt;|&lt;/span&gt; user &lt;span class="p"&gt;|&lt;/span&gt; host         &lt;span class="p"&gt;|&lt;/span&gt; password &lt;span class="p"&gt;|&lt;/span&gt;
++------+--------------+----------+
+&lt;span class="p"&gt;|&lt;/span&gt; root &lt;span class="p"&gt;|&lt;/span&gt; localhost    &lt;span class="p"&gt;|&lt;/span&gt;          &lt;span class="p"&gt;|&lt;/span&gt;
+&lt;span class="p"&gt;|&lt;/span&gt; root &lt;span class="p"&gt;|&lt;/span&gt; iz2853tmsqfz &lt;span class="p"&gt;|&lt;/span&gt;          &lt;span class="p"&gt;|&lt;/span&gt;
+&lt;span class="p"&gt;|&lt;/span&gt; root &lt;span class="p"&gt;|&lt;/span&gt; 127.0.0.1    &lt;span class="p"&gt;|&lt;/span&gt;          &lt;span class="p"&gt;|&lt;/span&gt;
+&lt;span class="p"&gt;|&lt;/span&gt;      &lt;span class="p"&gt;|&lt;/span&gt; localhost    &lt;span class="p"&gt;|&lt;/span&gt;          &lt;span class="p"&gt;|&lt;/span&gt;
+&lt;span class="p"&gt;|&lt;/span&gt;      &lt;span class="p"&gt;|&lt;/span&gt; iz2853tmsqfz &lt;span class="p"&gt;|&lt;/span&gt;          &lt;span class="p"&gt;|&lt;/span&gt;
++------+--------------+----------+
+
+&lt;span class="c1"&gt;# 设置root用户密码  &lt;/span&gt;
+mysqladmin -u root password &lt;span class="s1"&gt;&amp;#39;password&amp;#39;&lt;/span&gt;  
+
+&lt;span class="c1"&gt;# 使用root用户登录后创建新用户  &lt;/span&gt;
+mysql&amp;gt; CREATE USER &lt;span class="s1"&gt;&amp;#39;demouser&amp;#39;&lt;/span&gt;@&lt;span class="s1"&gt;&amp;#39;localhost&amp;#39;&lt;/span&gt; IDENTIFIED BY &lt;span class="s1"&gt;&amp;#39;demopassword&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+
+&lt;span class="c1"&gt;# 授权  &lt;/span&gt;
+mysql&amp;gt; GRANT ALL PRIVILEGES ON demodb.* to demouser@localhost&lt;span class="p"&gt;;&lt;/span&gt;
+mysql&amp;gt; FLUSH PRIVILEGES&lt;span class="p"&gt;;&lt;/span&gt;
+
+&lt;span class="c1"&gt;# 使用新创建的用户登录后创建数据库  &lt;/span&gt;
+mysql&amp;gt; CREATE DATABASE demodb&lt;span class="p"&gt;;&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h3&gt;拉取项目代码并安装所需包&lt;/h3&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="c1"&gt;# 安装数据库MySQL  &lt;/span&gt;
+yum install mysql  
+
+&lt;span class="c1"&gt;# 拉取项目代码(示例使用git),假设项目名为proj  &lt;/span&gt;
+git clone 代码库地址  
+
+&lt;span class="c1"&gt;# 安装requirements.txt中所有的包  &lt;/span&gt;
+pip install -r requirements.txt
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;&lt;em&gt;注意&lt;/em&gt; 如果出现以下错误：  &lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;_mysql.c:2654: error: &amp;#39;_mysql_ResultObject&amp;#39; has no member named &amp;#39;converter&amp;#39;
+    _mysql.c:2654: error: initializer element is not constant
+    _mysql.c:2654: error: (near initialization for &amp;#39;_mysql_ResultObject_memberlist[0].offset&amp;#39;)
+    _mysql.c:2661: error: &amp;#39;_mysql_ResultObject&amp;#39; has no member named &amp;#39;has_next&amp;#39;
+    _mysql.c:2661: error: initializer element is not constant
+    _mysql.c:2661: error: (near initialization for &amp;#39;_mysql_ResultObject_memberlist[1].offset&amp;#39;)
+    _mysql.c: In function &amp;#39;_mysql_ConnectionObject_getattro&amp;#39;:
+    _mysql.c:2680: error: &amp;#39;_mysql_ConnectionObject&amp;#39; has no member named &amp;#39;open&amp;#39;
+    error: command &amp;#39;gcc&amp;#39; failed with exit status 1
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;一般上述错误可以使用&lt;code&gt;yum install mysql-devel&lt;/code&gt; 解决，但是由于这里添加了源来安装MySQL，所以版本会不正确，出现以下错误：  &lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;Error&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="n"&gt;Package&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="n"&gt;mysql&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;devel&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="mf"&gt;5.1&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="mi"&gt;73&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="mi"&gt;7&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;el6&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;x86_64&lt;/span&gt; &lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;base&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;
+           &lt;span class="n"&gt;Requires&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="n"&gt;mysql&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mf"&gt;5.1&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="mi"&gt;73&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="mi"&gt;7&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;el6&lt;/span&gt;
+           &lt;span class="n"&gt;Installed&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="n"&gt;mysql&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="mf"&gt;5.5&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="mi"&gt;52&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;el6&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;remi&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;x86_64&lt;/span&gt; &lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="err"&gt;@&lt;/span&gt;&lt;span class="n"&gt;remi&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;
+               &lt;span class="n"&gt;mysql&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mf"&gt;5.5&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="mi"&gt;52&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;el6&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;remi&lt;/span&gt;
+           &lt;span class="n"&gt;Available&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="n"&gt;mysql&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="mf"&gt;5.1&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="mi"&gt;73&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="mi"&gt;7&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;el6&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;x86_64&lt;/span&gt; &lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;base&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;
+               &lt;span class="n"&gt;mysql&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mf"&gt;5.1&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="mi"&gt;73&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="mi"&gt;7&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;el6&lt;/span&gt;
+ &lt;span class="n"&gt;You&lt;/span&gt; &lt;span class="n"&gt;could&lt;/span&gt; &lt;span class="k"&gt;try&lt;/span&gt; &lt;span class="n"&gt;using&lt;/span&gt; &lt;span class="o"&gt;--&lt;/span&gt;&lt;span class="n"&gt;skip&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;broken&lt;/span&gt; &lt;span class="n"&gt;to&lt;/span&gt; &lt;span class="n"&gt;work&lt;/span&gt; &lt;span class="n"&gt;around&lt;/span&gt; &lt;span class="n"&gt;the&lt;/span&gt; &lt;span class="n"&gt;problem&lt;/span&gt;
+ &lt;span class="n"&gt;You&lt;/span&gt; &lt;span class="n"&gt;could&lt;/span&gt; &lt;span class="k"&gt;try&lt;/span&gt; &lt;span class="n"&gt;running&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="n"&gt;rpm&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;Va&lt;/span&gt; &lt;span class="o"&gt;--&lt;/span&gt;&lt;span class="n"&gt;nofiles&lt;/span&gt; &lt;span class="o"&gt;--&lt;/span&gt;&lt;span class="n"&gt;nodigest&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;解决方法：  &lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;yum --enablerepo=remi,remi-test install mysql-devel
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h3&gt;配置gunicorn&lt;/h3&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="c1"&gt;# gunicorn_start.sh  &lt;/span&gt;
+&lt;span class="c1"&gt;#!/bin/bash&lt;/span&gt;
+
+&lt;span class="nv"&gt;NAME&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;demo&amp;quot;&lt;/span&gt;
+&lt;span class="nv"&gt;DJANGODIR&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;/path/to/your/project/
+&lt;span class="nv"&gt;SOCKFILE&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;/tmp/gunicorn.sock
+&lt;span class="nv"&gt;USER&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;user
+&lt;span class="nv"&gt;GROUP&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;group
+&lt;span class="nv"&gt;NUM_WORKERS&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;2
+&lt;span class="nv"&gt;DJANGO_SETTINGS_MODULE&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;demo.settings
+&lt;span class="nv"&gt;DJNAGO_WSGI_MODULE&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;demo.wsgi
+
+&lt;span class="nb"&gt;cd&lt;/span&gt; &lt;span class="nv"&gt;$D&lt;/span&gt;JANGODIR
+&lt;span class="nb"&gt;source&lt;/span&gt; /path/to/your/venv/bin/activate
+&lt;span class="nb"&gt;export&lt;/span&gt; &lt;span class="nv"&gt;DJANGO_SETTINGS_MODULE&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="nv"&gt;$D&lt;/span&gt;JANGO_SETTINGS_MODULE
+&lt;span class="nb"&gt;export&lt;/span&gt; &lt;span class="nv"&gt;PYTHONPATH&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="nv"&gt;$D&lt;/span&gt;JANGODIR:$PYTHONPATH
+
+&lt;span class="nb"&gt;exec&lt;/span&gt; /path/to/your/venv/bin/gunicorn demo.wsgi:application &lt;span class="se"&gt;\&lt;/span&gt;
+    --name $NAME &lt;span class="se"&gt;\&lt;/span&gt;
+    --workers $NUM_WORKERS &lt;span class="se"&gt;\&lt;/span&gt;
+    --bind&lt;span class="o"&gt;=&lt;/span&gt;unix:$SOCKFILE &lt;span class="se"&gt;\&lt;/span&gt;
+    --log-level&lt;span class="o"&gt;=&lt;/span&gt;debug &lt;span class="se"&gt;\&lt;/span&gt;
+    --log-file&lt;span class="o"&gt;=&lt;/span&gt;/path/to/logs/bootcamp_gunicorn.log
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h3&gt;配置supervisor&lt;/h3&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;pip install supervisor
+
+echo_supervisord_conf &amp;gt; /path/to/conf/supervisord.conf  
+
+&lt;span class="c1"&gt;# 将以下配置加入supervisord.conf中  &lt;/span&gt;
+&lt;span class="o"&gt;[&lt;/span&gt;program:demo&lt;span class="o"&gt;]&lt;/span&gt;
+&lt;span class="nb"&gt;command&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; sh /path/to/gunicorn_start.sh
+&lt;span class="nv"&gt;user&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; user
+&lt;span class="nv"&gt;stdout_logfile&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; /path/to/logs/gunicorn_supervisor.log
+&lt;span class="nv"&gt;redirect_stderr&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nb"&gt;true&lt;/span&gt;
+&lt;span class="nv"&gt;environment&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="nv"&gt;LANG&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;en_US.UTF-8,LC_ALL&lt;span class="o"&gt;=&lt;/span&gt;en_US.UTF-8
+
+&lt;span class="c1"&gt;# 启动supervisord&lt;/span&gt;
+supervisord -c /path/to/supervisord.conf
+
+&lt;span class="c1"&gt;# 重新加载配置&lt;/span&gt;
+supervisorctl -c /path/to/supervisord.conf reload
+
+&lt;span class="c1"&gt;# 重启程序  &lt;/span&gt;
+supervisorctl -c /path/to/supervisord.conf restat demo  
+
+&lt;span class="c1"&gt;# 查看程序运行状态  &lt;/span&gt;
+supervisorctl -c /path/to/supervisord.conf status demo
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h3&gt;配置Nginx&lt;/h3&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="c1"&gt;# 安装Nginx  &lt;/span&gt;
+yum install nginx
+
+&lt;span class="c1"&gt;# /etc/nginx/conf.d/demo.conf文件中写入以下配置  &lt;/span&gt;
+upstream demo_server &lt;span class="o"&gt;{&lt;/span&gt;
+    server unix:/path/to/gunicorn.sock &lt;span class="nv"&gt;fail_timeout&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;0&lt;span class="p"&gt;;&lt;/span&gt;
+&lt;span class="o"&gt;}&lt;/span&gt;
+
+server &lt;span class="o"&gt;{&lt;/span&gt;
+
+      listen       8888&lt;span class="p"&gt;;&lt;/span&gt;
+      server_name  example.com&lt;span class="p"&gt;;&lt;/span&gt;
+      access_log   /path/to/logs/nginx/access.log&lt;span class="p"&gt;;&lt;/span&gt;
+      error_log    /path/to/logs/nginx/error.log&lt;span class="p"&gt;;&lt;/span&gt;
+
+      location  /static/ &lt;span class="o"&gt;{&lt;/span&gt;
+          root /path/to/demo&lt;span class="p"&gt;;&lt;/span&gt;
+      &lt;span class="o"&gt;}&lt;/span&gt;
+
+      location  / &lt;span class="o"&gt;{&lt;/span&gt;
+          proxy_redirect        off&lt;span class="p"&gt;;&lt;/span&gt;
+          proxy_set_header      Host             $host&lt;span class="p"&gt;;&lt;/span&gt;
+          proxy_set_header      X-Real-IP        $remote_addr&lt;span class="p"&gt;;&lt;/span&gt;
+          proxy_set_header      X-Forwarded-For  $proxy_add_x_forwarded_for&lt;span class="p"&gt;;&lt;/span&gt;
+          client_max_body_size  10m&lt;span class="p"&gt;;&lt;/span&gt;
+
+          &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="o"&gt;(&lt;/span&gt;!-f $request_filename&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+              proxy_pass http://demo_server&lt;span class="p"&gt;;&lt;/span&gt;
+              break&lt;span class="p"&gt;;&lt;/span&gt;
+          &lt;span class="o"&gt;}&lt;/span&gt;
+      &lt;span class="o"&gt;}&lt;/span&gt;
+
+  &lt;span class="o"&gt;}&lt;/span&gt;
+
+  &lt;span class="c1"&gt;# 启动/重启Nginx&lt;/span&gt;
+  /etc/init.d/nginx start&lt;span class="p"&gt;|&lt;/span&gt;restart
+
+  &lt;span class="c1"&gt;# reload 配置  &lt;/span&gt;
+  /etc/init.d/nginx reload
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h3&gt;数据表创建与静态文件处理&lt;/h3&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="c1"&gt;# 创建数据库  &lt;/span&gt;
+mysql&amp;gt; create database demo&lt;span class="p"&gt;;&lt;/span&gt;
+
+&lt;span class="c1"&gt;# migrate  &lt;/span&gt;
+python manage.py migrate  
+
+&lt;span class="c1"&gt;# collectstatic&lt;/span&gt;
+python manage.py collectstatic
+&lt;/pre&gt;&lt;/div&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">木头lbj</dc:creator><pubDate>Wed, 28 Sep 2016 00:00:00 +0800</pubDate><guid>tag:blog.everlose.com,2016-09-28:deploy-django-on-centos.html</guid><category>Web</category></item><item><title>RESUME</title><link>http://blog.everlose.com/resume.html</link><description>&lt;p&gt;2012年大三末期走上『码农』之路，立志将技术路线走到底，直到现在未曾改变。也一直在寻找有技术追求，有挑战，有意思的公司，为互联网做出自己的贡献。  &lt;/p&gt;
 &lt;h3&gt;工作经历&lt;/h3&gt;
 &lt;p&gt;2015年7月 — 至今  华三通信技术公司  云计算开发  &lt;/p&gt;
 &lt;p&gt;1、负责产品后端虚拟化开发，管理平台前端开发。&lt;br /&gt;
