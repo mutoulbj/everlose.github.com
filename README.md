@@ -1,2 +1,3 @@
-==================
-基于Pelican的个人博客
+Blog About Code And Life.  
+
+Based on pelican.
