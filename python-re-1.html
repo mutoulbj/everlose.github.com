@@ -63,8 +63,8 @@
             </section>
             <p>正则表达式(regular expression)是一种用形式化语法描述的文本匹配模式。在需要处理大量文本处理的应用中有广泛的使用，我没使用的编辑器，IDE中的搜索常用正则表达式作为搜索模式。玩过*nix系统的都知道如sed，grep,awk这类的命令，他们是非常强大的文本处理工具。几乎所有的语言都有对正则表达式的支持，有的直接在语法中支持，有的使用扩展库的形式。python使用的就是扩展库re。  </p>
 <ul>
-<li>re.search(pattern,string,flag=0)<br />
-搜索文本中的匹配的模式是最常用的.以模式和文本作为输入，如果有匹配则返回一个Match对象，反之返回None。<br />
+<li>re.search(pattern,string,flag=0)<br>
+搜索文本中的匹配的模式是最常用的.以模式和文本作为输入，如果有匹配则返回一个Match对象，反之返回None。<br>
 每个Match对象包括相关的匹配信息:原字符串、正则表达式和匹配的文本在字符串中的位置。  </li>
 </ul>
 <div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">re</span>  
@@ -79,8 +79,8 @@
 
 
 <ul>
-<li>re.compile(pattern,flag=0)<br />
-如果程序中频繁的使用到同一个正则表达式，每次使用的时候都写一遍正则表达式不仅不高效而且会大大增加出错的几率,re提供了compile函数将一个表达式字符串编译为一个RegexObject。<br />
+<li>re.compile(pattern,flag=0)<br>
+如果程序中频繁的使用到同一个正则表达式，每次使用的时候都写一遍正则表达式不仅不高效而且会大大增加出错的几率,re提供了compile函数将一个表达式字符串编译为一个RegexObject。<br>
 模块级函数会维护已编译表达式的一个缓存，而这个缓存是的大小是有限制的。直接使用已经编译的表达式可以避免缓存查找的开销，并且在加载模块时就会预编译所有的表达式。  </li>
 </ul>
 <div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">re</span>  
@@ -96,7 +96,7 @@
 
 
 <ul>
-<li>re.findall(pattern, string, flag=0)<br />
+<li>re.findall(pattern, string, flag=0)<br>
 使用search会返回匹配的单个实例，使用findall会返回所有匹配的不重叠的子串。  </li>
 </ul>
 <div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">re</span>  
@@ -107,7 +107,7 @@
 
 
 <ul>
-<li>re.finditer(pattern, string, flag=0)<br />
+<li>re.finditer(pattern, string, flag=0)<br>
 finditer会返回一个迭代器，会生成Match实例，不像findall()返回字符串.  </li>
 </ul>
 <div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">re</span>  
@@ -124,15 +124,15 @@ finditer会返回一个迭代器，会生成Match实例，不像findall()返回�
 <p>正则匹配默认采用的是贪婪算法，也就是说会re在匹配的时候会利用尽可能多的输入，而使用？可以关闭这种贪心行为，只匹配最少的输入。这之前先说下量词。  </p>
 <p>量词是为了简化正则表达式的读写而定义的，通用的形式是{m,n},这表示匹配的个数至少是m，最多是n，在','之后不能有空格，否则会出错，并且均为闭区间。  </p>
 <blockquote>
-<p>{n}     之前的元素必须出现n次<br />
-{m,n}   之前元素最少出现m次，最多n次<br />
-{m,}    之前的元素最少出现m次，无上限<br />
+<p>{n}     之前的元素必须出现n次<br>
+{m,n}   之前元素最少出现m次，最多n次<br>
+{m,}    之前的元素最少出现m次，无上限<br>
 {0,n}   之前的元素可以不出现，也可以出现，出现的话最多出现n次  </p>
 </blockquote>
 <p>除了之上，还有三个常用的量词*,?和+  </p>
 <blockquote>
-<p>*      等价于{0,}<br />
-+      等价于{1,}<br />
+<p>*      等价于{0,}<br>
++      等价于{1,}<br>
 \?      等价于{0,1}  </p>
 </blockquote>
 <p>还有^和$，分别表示段或者字符串的开始与结束。</p>

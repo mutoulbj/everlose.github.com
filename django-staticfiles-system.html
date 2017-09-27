@@ -228,9 +228,9 @@ background-color: red;
 <li>现在先不管<code>STATIC_ROOT</code>和<code>STATICFILES_DIRS</code>。即使你将他们注释或者删除，你的项目依然能够像现在一样工作。   </li>
 <li>我们需要将<strong>'django.contrib.staticfiles'</strong>添加进<code>INSTALLED_APPS</code>，如果我们想要使用Django默认的静态文件处理服务。  </li>
 <li>所谓的Django默认的静态文件处理服务就相当于需要使用Django提供的<code>python manage.py runserver</code>。  </li>
-<li>Django默认会在<code>STATIC_URL</code>下处理静态文件。注意<code>STATIC_URL</code>已经设置为<strong>'/static/'</strong>。这就是为什么我们获取到了我们的静态文件，举个例子，样式文件在这个url下<code>http://127.0.0.1:8000/static/styles.css</code>。<br />
+<li>Django默认会在<code>STATIC_URL</code>下处理静态文件。注意<code>STATIC_URL</code>已经设置为<strong>'/static/'</strong>。这就是为什么我们获取到了我们的静态文件，举个例子，样式文件在这个url下<code>http://127.0.0.1:8000/static/styles.css</code>。<br>
 如果你访问<code>http://127.0.0.1:8000/static_changed/styles.css</code>，你将会得到一个404页面。如果你想要在<code>http://127.0.0.1:8000/static_changed/styles.css</code>提供，需要设置<code>STATIC_URL = '/static_changed/'</code>。现在动手试试吧。这只是为了举例说明STATIC_URL的用处，现在都改回默认设置，即<code>STATIC_URL = '/static/'</code>。  </li>
-<li>下一个问题是，Django是怎么知道从哪里去读取静态文件的，或者说怎么知道去哪里找到静态文件呢？这就是<code>STATICFILES_FINDERS</code>的作用了。<br />
+<li>下一个问题是，Django是怎么知道从哪里去读取静态文件的，或者说怎么知道去哪里找到静态文件呢？这就是<code>STATICFILES_FINDERS</code>的作用了。<br>
 在<code>STATICFILES_FINDERS</code>中我们有两条记录:  </li>
 </ul>
 <div class="highlight"><pre><span></span><span class="s1">&#39;django.contrib.staticfiles.finders.FileSystemFinder&#39;</span><span class="p">,</span>  

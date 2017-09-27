@@ -64,14 +64,14 @@
             </section>
             <p>Messenger跟它的<a href="http://github.hubspot.com/messenger/">官方文档</a>介绍的一样,是一个非常酷的弹框组件,<strong>Alerts for 21st century</strong>，名不虚传.  </p>
 <h2>依赖</h2>
-<hr />
+<hr>
 <ul>
 <li>jQuery    </li>
 <li>Backbone.js  </li>
 <li>可以和Bootstrap完美融合,但Bootstrap并不是必须的  </li>
 </ul>
 <h2>JS文件和基本的CSS文件</h2>
-<hr />
+<hr>
 <div class="highlight"><pre><span></span>/build/js/messenger.min.js  
 /build/css/messenger.css
 /build/css/messenger-theme-future.css
@@ -79,7 +79,7 @@
 
 
 <h2>有四种主题可选,弹出框有6个位置可供选择</h2>
-<hr />
+<hr>
 <ul>
 <li>Future 对应 <code>messenger-theme-future.css</code>   </li>
 <li>Block  对应 <code>messenger-theme-block.css</code>  </li>
@@ -88,8 +88,8 @@
 </ul>
 <p>选择哪种主题,就需要加入该主题的css文件.弹出框的位置和demo可以参看<a href="http://github.hubspot.com/messenger/">官方文档</a>.   </p>
 <h2>用作提示框</h2>
-<hr />
-<p>使用messenger来做各种的弹框是非常合适的,他的ui非常的美观,而且使用非常的简单.  <br />
+<hr>
+<p>使用messenger来做各种的弹框是非常合适的,他的ui非常的美观,而且使用非常的简单.  <br>
 首先,设定弹出框的默认形式,弹出位置和主题,以Block为主题，再顶部弹出,代码如下:   </p>
 <div class="highlight"><pre><span></span><span class="nx">$</span><span class="p">.</span><span class="nx">_messengerDefaults</span> <span class="o">=</span> <span class="p">{</span>
   <span class="nx">extraClasses</span><span class="o">:</span> <span class="s1">&#39;messenger-fixed messenger-theme-block messenger-on-top&#39;</span>
@@ -105,7 +105,7 @@
 
 <p>并且,messenger支持ajax和事件,功能非常强大,几乎可以满足网页中所有情况下弹框需求.    </p>
 <h2>用于表单验证</h2>
-<hr />
+<hr>
 <p>因为messenger支持ajax,与jQuery的$.ajax方法结合的非常好,所以我便试着将于用于Django项目的表单验证.    </p>
 <p>话不多说,直接上代码.    </p>
 <div class="highlight"><pre><span></span>       <span class="nx">$</span><span class="p">(</span><span class="s1">&#39;.btn-register&#39;</span><span class="p">).</span><span class="nx">on</span><span class="p">(</span><span class="s1">&#39;click&#39;</span><span class="p">,</span><span class="kd">function</span><span class="p">(</span><span class="nx">e</span><span class="p">){</span>
@@ -210,8 +210,8 @@
 </pre></div>
 
 
-<p>以上代码,在点击提交按钮后先进行表单验证,验证通过后才提交表单.  <br />
-但这里面有个坑,一定要将ajax异步关闭,即<code>async:false</code>一定要加上,否则在进行一项验证的时候,代码会继续执行,等表单提交后才将标志<code>pass_check</code>置为<code>false</code>.  <br />
+<p>以上代码,在点击提交按钮后先进行表单验证,验证通过后才提交表单.  <br>
+但这里面有个坑,一定要将ajax异步关闭,即<code>async:false</code>一定要加上,否则在进行一项验证的时候,代码会继续执行,等表单提交后才将标志<code>pass_check</code>置为<code>false</code>.  <br>
 <strong>注</strong>:代码作实例,不够优美.    </p>
 <p>总结:Messenger是一个非常棒的弹框组件,你值得拥有!</p>
             <a href="#" class="go-top">Go Top</a>
